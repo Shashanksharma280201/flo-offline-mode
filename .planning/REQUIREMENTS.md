@@ -18,8 +18,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Authentication & Authorization
 
-- [ ] **AUTH-01**: JWT-based robot authentication (same tokens as cloud mode)
-- [ ] **AUTH-02**: Dual-token strategy for extended offline periods (refresh tokens with offline grace)
+- [x] **AUTH-01**: JWT-based robot authentication (same tokens as cloud mode)
+- [x] **AUTH-02**: Dual-token strategy for extended offline periods (refresh tokens with offline grace)
 - [ ] **AUTH-03**: Robot ID validation on Socket.IO connection handshake
 - [ ] **AUTH-04**: Local user session management (web UI access)
 
@@ -129,8 +129,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-04 | Phase 1: Container Infrastructure & Data Foundation | Complete |
 | INFRA-05 | Phase 1: Container Infrastructure & Data Foundation | Complete |
 | INFRA-06 | Phase 1: Container Infrastructure & Data Foundation | Complete |
-| AUTH-01 | Phase 2: Authentication & Offline-First Core | Pending |
-| AUTH-02 | Phase 2: Authentication & Offline-First Core | Pending |
+| AUTH-01 | Phase 2: Authentication & Offline-First Core | Complete |
+| AUTH-02 | Phase 2: Authentication & Offline-First Core | Complete |
 | AUTH-03 | Phase 2: Authentication & Offline-First Core | Pending |
 | AUTH-04 | Phase 2: Authentication & Offline-First Core | Pending |
 | DATA-01 | Phase 3: Data Layer with Repository Pattern | Pending |
