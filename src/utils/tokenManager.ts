@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
  */
 export const generateAccessToken = (data: object): string => {
   return jwt.sign(data, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.JWT_EXPIRY_IN_SECONDS,
+    expiresIn: parseInt(process.env.JWT_EXPIRY_IN_SECONDS || '3600'),
   });
 };
 
@@ -22,7 +22,7 @@ export const generateAccessToken = (data: object): string => {
  */
 export const generateRefreshToken = (data: object): string => {
   return jwt.sign(data, process.env.REFRESH_TOKEN_SECRET as string, {
-    expiresIn: process.env.REFRESH_TOKEN_EXPIRY_IN_SECONDS,
+    expiresIn: parseInt(process.env.REFRESH_TOKEN_EXPIRY_IN_SECONDS || '7776000'),
   });
 };
 

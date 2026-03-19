@@ -115,7 +115,7 @@ export const masterListener = (masterNamespace: Namespace, io: Server) => {
     socket.on("disconnect", async (reason: DisconnectReason, details: any) => {
       try {
         // Get robot state from Redis
-        const robot = await redisClient.json.get(
+        const robot = await redisClient.json.GET(
           `robot:${socket.data.robot._id}`
         ) as RedisRobotState | null;
 

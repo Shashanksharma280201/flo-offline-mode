@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response, RequestHandler } from 'express';
 import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import robotModel from '../models/Robot.js';
@@ -23,7 +23,7 @@ interface JwtPayloadRobot {
  * 3. Query robotModel.findById(deviceId) to validate robot exists
  * 4. Throw appropriate errors for missing token, expired token, or invalid robot
  */
-export const protectRobot = asyncHandler(
+export const protectRobot: RequestHandler = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     let token;
 
