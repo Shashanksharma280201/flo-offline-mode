@@ -51,10 +51,12 @@ Plans:
   3. Socket.IO connection automatically reconnects after network interruption with unlimited retry attempts
   4. Web UI displays current online/offline status and shows local data immediately without waiting for sync
   5. Heartbeat mechanism detects robot disconnect within 30 seconds
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] TBD
+- [ ] 02-01-PLAN.md — Robot model and JWT authentication with dual-token strategy
+- [ ] 02-02-PLAN.md — Socket.IO robot connection management with heartbeat tracking
+- [ ] 02-03-PLAN.md — Web UI user authentication and session management
 
 ### Phase 3: Data Layer with Repository Pattern
 **Goal**: All autonomy data (missions, sessions, robot state) persists locally with automatic sync queueing and schema parity with cloud
@@ -143,7 +145,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Container Infrastructure & Data Foundation | 2/5 | In Progress | - |
-| 2. Authentication & Offline-First Core | 0/TBD | Not started | - |
+| 2. Authentication & Offline-First Core | 0/3 | Not started | - |
 | 3. Data Layer with Repository Pattern | 0/TBD | Not started | - |
 | 4. Sync Engine with Idempotency | 0/TBD | Not started | - |
 | 5. Mission Planning & Real-Time Execution | 0/TBD | Not started | - |
