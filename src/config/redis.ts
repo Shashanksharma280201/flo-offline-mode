@@ -16,7 +16,7 @@ export async function verifyRedisConfig(): Promise<void> {
 
   try {
     // Verify maxmemory-policy is noeviction (BullMQ requirement)
-    const policy = await redis.config('GET', 'maxmemory-policy');
+    const policy = await redis.config('GET', 'maxmemory-policy') as string[];
 
     if (policy && policy[1] !== 'noeviction') {
       console.warn('WARNING: Redis maxmemory-policy should be "noeviction" for BullMQ');

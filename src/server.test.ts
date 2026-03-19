@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import http from 'http';
 
 describe('Express Server', () => {
-  let server: http.Server;
+  let server: http.Server | undefined;
 
   afterEach(() => {
     if (server) {

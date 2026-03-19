@@ -14,9 +14,12 @@ export async function healthCheck(req: Request, res: Response): Promise<void> {
     if (mongoose.connection.readyState !== 1) {
       health.mongodb = 'disconnected';
       health.status = 'degraded';
-    } else {
+    } else if (mongoose.connection.db) {
       await mongoose.connection.db.admin().ping();
       health.mongodb = 'connected';
+    } else {
+      health.mongodb = 'disconnected';
+      health.status = 'degraded';
     }
 
     // Check Redis connection using ioredis

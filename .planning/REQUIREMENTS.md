@@ -11,7 +11,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **INFRA-01**: Docker Compose multi-container setup (app, MongoDB 8.0, Redis) with named volumes
 - [x] **INFRA-02**: Multi-stage Dockerfile using node:22-alpine base image (<500MB total)
-- [ ] **INFRA-03**: Graceful shutdown signal handling (SIGTERM) with MongoDB connection cleanup
+- [x] **INFRA-03**: Graceful shutdown signal handling (SIGTERM) with MongoDB connection cleanup
 - [x] **INFRA-04**: MongoDB configured with maxmemory limits and TTL indexes for sensor data
 - [x] **INFRA-05**: Redis configured with maxmemory-policy: noeviction for BullMQ
 - [x] **INFRA-06**: Health check endpoints for all containers
@@ -125,7 +125,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | INFRA-01 | Phase 1: Container Infrastructure & Data Foundation | Complete |
 | INFRA-02 | Phase 1: Container Infrastructure & Data Foundation | Complete |
-| INFRA-03 | Phase 1: Container Infrastructure & Data Foundation | Pending |
+| INFRA-03 | Phase 1: Container Infrastructure & Data Foundation | Complete |
 | INFRA-04 | Phase 1: Container Infrastructure & Data Foundation | Complete |
 | INFRA-05 | Phase 1: Container Infrastructure & Data Foundation | Complete |
 | INFRA-06 | Phase 1: Container Infrastructure & Data Foundation | Complete |
