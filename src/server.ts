@@ -1,7 +1,10 @@
 import express, { Request, Response, Express } from 'express';
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
 import { connectDatabase } from './config/database.js';
 import { verifyRedisConfig } from './config/redis.js';
 import { healthCheck } from './health/healthController.js';
+import { masterListener } from "./sockets/listeners/v1/masterListener.js";
 
 const PORT = process.env.PORT || 3000;
 const app: Express = express();
@@ -22,36 +25,53 @@ app.get('/', (req: Request, res: Response) => {
   });
 });
 
-// Server startup
-const server = app.listen(PORT, async () => {
-  console.log(`Server running on port ${PORT}`);
+// Create HTTP server from Express app
+const httpServer = createServer(app);
 
-  // Connect to MongoDB
+// Initialize Socket.IO server with 30-second disconnect detection
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: "*", // Allow all origins in offline mode (local network only)
+    methods: ["GET", "POST"]
+  },
+  pingTimeout: 20000, // 20 seconds (reduced from cloud's 60s)
+  pingInterval: 10000, // 10 seconds (reduced from cloud's 25s)
+  connectTimeout: 45000 // 45 seconds for initial connection
+});
+
+// API Routes - mount application routes here
+// (Stable insertion marker for Plan 02-03 Task 3)
+
+// Register Socket.IO namespaces
+const masterNamespace = io.of("/v1/robot/master");
+masterListener(masterNamespace, io);
+
+console.log("[Socket.IO] Initialized /v1/robot/master namespace");
+
+// Start HTTP server (replaces old app.listen)
+const server = httpServer.listen(PORT, async () => {
+  console.log(`Server listening on port ${PORT}`);
+
+  // Connect to MongoDB (existing code from Phase 1)
   await connectDatabase();
 
-  // Verify Redis configuration
+  // Verify Redis config (existing code from Phase 1)
   try {
     await verifyRedisConfig();
   } catch (error) {
-    console.error('Redis verification failed, but continuing startup:', error);
+    console.warn(`Redis verification failed: ${error}`);
   }
 
   console.log('All systems ready');
 });
 
 // Graceful shutdown on SIGTERM
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully...');
-
-  // 1. Stop accepting new connections
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, closing HTTP server...');
   server.close(() => {
     console.log('HTTP server closed');
+    // MongoDB close handled by database.ts SIGTERM handler
   });
-
-  // 2. MongoDB connection will be closed by database.ts SIGTERM handler
-  // No need to duplicate here - database.ts already has it
-
-  // Note: database.ts SIGTERM handler will exit process after MongoDB close
 });
 
 // Also handle SIGINT for development (Ctrl+C)
