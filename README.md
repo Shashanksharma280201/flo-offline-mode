@@ -1,30 +1,34 @@
 # FLO OFFLINE MODE - Complete Setup Guide
 
-## 📋 Table of Contents
+## Table of Contents
 1. [Overview](#overview)
 2. [Directory Structure](#directory-structure)
 3. [Prerequisites](#prerequisites)
 4. [Quick Start](#quick-start)
 5. [Detailed Setup](#detailed-setup)
 6. [Running the System](#running-the-system)
-7. [Troubleshooting](#troubleshooting)
-8. [Architecture](#architecture)
+7. [Auto-Launch on Boot](#auto-launch-on-boot)
+8. [Data Synchronization](#data-synchronization)
+9. [Troubleshooting](#troubleshooting)
+10. [Architecture](#architecture)
 
 ---
 
-## 🎯 Overview
+## Overview
 
 **FLO Offline Mode** enables complete autonomous robot operation without internet connectivity by:
 - Running MongoDB locally (Docker)
 - Using MinIO for S3-compatible storage (Docker)
 - Storing all autonomy data locally (path maps, robots, stations)
 - Supporting LIDAR map uploads from robots
+- Auto-launch on system boot with tmux
+- Bidirectional data sync with production servers
 
 **Use Case:** Deploy robots with mission control in remote areas without internet.
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ```
 flo-offline-mode/
@@ -88,20 +92,22 @@ flo-offline-mode/
 │   ├── export-prod-data.sh                 # Download production data
 │   └── import-to-local.sh                  # Import to local MongoDB
 │
-├── 📂 Setup & Testing
+├── Scripts
 │   ├── setup.sh                            # Automated setup script
+│   ├── start-offline-mode.sh               # Launch all services in tmux
+│   ├── install-boot-service.sh             # Install systemd boot service
+│   ├── push-to-prod.sh                     # Sync local → production
+│   ├── pull-from-prod.sh                   # Sync production → local
+│   ├── export-prod-data.sh                 # Download production data
+│   ├── import-to-local.sh                  # Import to local MongoDB
 │   ├── test-connection.js                  # Test MongoDB connection
 │   └── test-minio.js                       # Test MinIO S3 connection
 │
-└── 📂 Documentation
+└── Documentation
     ├── README.md                           # This file
-    ├── SETUP_GUIDE.md                      # Setup.sh usage guide
-    ├── MINIO_SETUP_COMPLETE.md             # MinIO configuration details
-    ├── DATA_EXPORT_PLAN.md                 # Data export strategy
-    ├── COLLECTIONS_LIST.md                 # Database collections reference
-    ├── OFFLINE_S3_PLAN_V2.md               # S3 offline architecture
-    ├── EXPORT_SUMMARY.txt                  # Export results log
-    └── IMPORT_SUCCESS.txt                  # Import results log
+    ├── docker-compose.yml                  # Container configuration
+    ├── flo-offline.service                 # Systemd service file
+    └── .gitignore                          # Git ignore rules
 ```
 
 ---
@@ -365,7 +371,206 @@ VITE v5.x.x ready in xxx ms
 
 ---
 
-## 🛠️ Troubleshooting
+## Auto-Launch on Boot
+
+### Using tmux for Session Management
+
+The `start-offline-mode.sh` script launches all services in a single tmux session with 3 panes:
+
+**Manual Start:**
+```bash
+cd /home/shanks/Music/flo-offline-mode
+./start-offline-mode.sh
+```
+
+**tmux Commands:**
+```bash
+# Attach to running session
+tmux attach -t flo-offline
+
+# Detach from session (services keep running)
+Ctrl+B then D
+
+# Kill session
+tmux kill-session -t flo-offline
+
+# List sessions
+tmux ls
+```
+
+**Session Layout:**
+- **Pane 0 (left):** Backend server (port 5000)
+- **Pane 1 (top-right):** Frontend dev server (port 3002)
+- **Pane 2 (bottom-right):** Docker container logs
+
+---
+
+### Install Boot Service (Auto-start on System Boot)
+
+**Install systemd service:**
+```bash
+cd /home/shanks/Music/flo-offline-mode
+sudo ./install-boot-service.sh
+```
+
+**Service Management:**
+```bash
+# Start service now
+sudo systemctl start flo-offline
+
+# Stop service
+sudo systemctl stop flo-offline
+
+# Restart service
+sudo systemctl restart flo-offline
+
+# Check status
+sudo systemctl status flo-offline
+
+# View logs
+sudo journalctl -u flo-offline -f
+
+# Disable auto-start on boot
+sudo systemctl disable flo-offline
+
+# Re-enable auto-start
+sudo systemctl enable flo-offline
+```
+
+**Service Features:**
+- Waits for Docker and network to be ready
+- Starts all services in tmux session
+- Auto-restarts on failure
+- Logs to system journal
+- Runs as user `shanks` (not root)
+
+**Verify Auto-Start:**
+```bash
+# Check if enabled
+systemctl is-enabled flo-offline
+
+# Test by rebooting
+sudo reboot
+
+# After reboot, check if running
+tmux ls
+systemctl status flo-offline
+```
+
+---
+
+## Data Synchronization
+
+### Push to Production (Local → Production)
+
+Sync locally created data to production servers:
+
+```bash
+cd /home/shanks/Music/flo-offline-mode
+./push-to-prod.sh
+```
+
+**What it does:**
+- Finds documents without `syncedAt` field (newly created offline)
+- Pushes to production MongoDB (8 collections)
+- Marks synced documents with `syncedAt` timestamp
+- Uploads MinIO files to AWS S3 (if AWS CLI configured)
+- Preserves local data (no deletion)
+
+**Requirements:**
+- Internet connection
+- Production MongoDB credentials (in script)
+- AWS CLI configured (for S3 sync): `aws configure`
+
+**Example Output:**
+```
+[2/4] Syncing MongoDB collections to production...
+Syncing collection: pathmaps
+  → Found 5 new documents
+  ✓ Synced 5 documents
+
+[3/4] Syncing MinIO files to AWS S3...
+  → Found 12 files in MinIO
+  → Uploading to AWS S3...
+  ✓ Uploaded 12 files to S3
+```
+
+---
+
+### Pull from Production (Production → Local)
+
+Sync production data to local offline database:
+
+```bash
+# Pull MongoDB data only
+./pull-from-prod.sh
+
+# Pull MongoDB + S3 files (large download)
+./pull-from-prod.sh --with-s3
+```
+
+**What it does:**
+- Downloads documents created after last pull (timestamp-based)
+- Imports to local MongoDB (11 collections)
+- Optionally downloads S3 files to MinIO (`--with-s3` flag)
+- Preserves local modifications (upsert mode)
+- Updates `.last-pull-timestamp` file
+
+**Requirements:**
+- Internet connection
+- Production MongoDB credentials
+
+**Example Output:**
+```
+Last pull: Fri Mar 22 18:08:31 2024
+
+[2/5] Pulling MongoDB collections from production...
+Pulling collection: pathmaps
+  ✓ Pulled collection
+
+[4/5] Updating pull timestamp...
+  ✓ Timestamp updated
+```
+
+---
+
+### Sync Strategy
+
+**When to Push:**
+- After creating new pathmaps offline
+- After robot operations offline
+- When internet is available
+- Before shutting down offline system
+
+**When to Pull:**
+- Before going offline (get latest production data)
+- After returning online (check for production updates)
+- Periodically (weekly/monthly)
+
+**Conflict Resolution:**
+- MongoDB: Upsert by `_id` (last-write-wins)
+- S3 Files: Overwrite (immutable files)
+- Local changes preserved during pull
+
+**Data Flow:**
+```
+Offline Period:
+  User/Robot → Local MongoDB → Mark as unsynced
+
+Push to Production:
+  Local MongoDB → Find {syncedAt: null}
+  → Production MongoDB → Mark with syncedAt
+  MinIO → AWS S3
+
+Pull from Production:
+  Production MongoDB → Find {createdAt > lastPull}
+  → Local MongoDB (upsert)
+  AWS S3 → MinIO (optional)
+```
+
+---
+
+## Troubleshooting
 
 ### **MongoDB Connection Failed**
 

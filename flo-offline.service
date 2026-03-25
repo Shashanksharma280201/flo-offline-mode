@@ -1,0 +1,35 @@
+[Unit]
+Description=FLO Offline Mode Auto Launch
+After=network.target docker.service
+Requires=docker.service
+# Wait for network and docker to be ready
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=shanks
+Group=shanks
+WorkingDirectory=/home/shanks/Music/flo-offline-mode
+
+# Environment variables
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/shanks/.local/share/pnpm"
+Environment="HOME=/home/shanks"
+Environment="DISPLAY=:0"
+
+# Start command
+ExecStart=/home/shanks/Music/flo-offline-mode/start-offline-mode.sh
+
+# Stop command (kill tmux session)
+ExecStop=/usr/bin/tmux kill-session -t flo-offline
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+
+# Logs
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=flo-offline
+
+[Install]
+WantedBy=multi-user.target
