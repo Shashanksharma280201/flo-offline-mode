@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # MongoDB - Local database
+  mongodb:
+    image: mongo:6.0
+    container_name: flo-offline-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongodb:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=mission-control
+    restart: unless-stopped
+    networks:
+      - flo-network
+
+  # Redis - Already working locally (commented out since Redis is already running on host)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: flo-offline-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - ./data/redis:/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - flo-network
+
+  # MinIO - S3-compatible object storage for LIDAR maps
+  minio:
+    image: minio/minio:latest
+    container_name: flo-offline-minio
+    ports:
+      - "9000:9000"  # S3 API (Robot uploads here)
+      - "9001:9001"  # Web Console UI
+    environment:
+      MINIO_ROOT_USER: flo
+      MINIO_ROOT_PASSWORD: flo123456
+    volumes:
+      - ./data/minio:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    networks:
+      - flo-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # MinIO Client - Initialize bucket on startup
+  minio-init:
+    image: minio/mc:latest
+    container_name: flo-offline-minio-init
+    depends_on:
+      - minio
+    networks:
+      - flo-network
+    entrypoint: >
+      /bin/sh -c "
+      sleep 10;
+      echo 'Setting up MinIO...';
+      mc alias set local http://minio:9000 flo flo123456;
+      mc mb local/lidar-maps --ignore-existing;
+      mc anonymous set download local/lidar-maps;
+      echo 'MinIO setup complete!';
+      "
+    restart: "no"
+
+networks:
+  flo-network:
+    driver: bridge

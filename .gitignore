@@ -1,0 +1,33 @@
+# Docker volumes and data
+data/
+
+# Production backup data
+prod-backup/
+
+# Project directories (separate git repos)
+mission-control/
+mission-control-frontend/
+
+# Node modules
+node_modules/
+
+# Environment files with secrets
+mission-control/.env
+mission-control-frontend/.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Sync timestamp
+.last-pull-timestamp
+
+# Test files (can be removed if not needed)
+test-connection.js
+test-minio.js
