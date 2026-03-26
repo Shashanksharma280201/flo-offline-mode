@@ -220,17 +220,27 @@ create_conda_env() {
     log_info "Checking for existing conda environment: $CONDA_ENV_NAME"
 
     if conda env list | grep -q "^$CONDA_ENV_NAME "; then
-        log_warning "Conda environment '$CONDA_ENV_NAME' already exists"
-        read -p "Remove and recreate? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            log_info "Removing existing environment..."
-            conda env remove -n $CONDA_ENV_NAME -y
-        else
-            log_info "Using existing environment"
-            conda activate $CONDA_ENV_NAME
-            return 0
+        log_success "Conda environment '$CONDA_ENV_NAME' already exists"
+
+        # Activate existing environment
+        eval "$(conda shell.bash hook)"
+        conda activate $CONDA_ENV_NAME
+
+        # Verify Python and Node.js versions
+        log_info "Verifying environment packages..."
+
+        PYTHON_VERSION=$(python --version 2>&1 | cut -d' ' -f2 | cut -d'.' -f1,2)
+        NODE_VERSION=$(node --version 2>&1 | cut -d'v' -f2 | cut -d'.' -f1)
+
+        log_success "Python version: $(python --version 2>&1)"
+        log_success "Node.js version: $(node --version 2>&1)"
+
+        # Check if versions are acceptable
+        if [[ $(echo "$PYTHON_VERSION < 3.11" | bc -l) -eq 1 ]] 2>/dev/null || [[ "$NODE_VERSION" -lt 20 ]] 2>/dev/null; then
+            log_warning "Environment has outdated packages, but keeping existing setup"
         fi
+
+        return 0
     fi
 
     log_info "Creating conda environment with Python 3.11 and Node.js 20..."
@@ -238,12 +248,12 @@ create_conda_env() {
 
     conda create -n $CONDA_ENV_NAME -y --override-channels -c conda-forge \
         python=3.11 \
-        nodejs=20 \
-        npm
+        nodejs=20
 
     log_success "Conda environment '$CONDA_ENV_NAME' created"
 
     # Activate environment
+    eval "$(conda shell.bash hook)"
     conda activate $CONDA_ENV_NAME
     log_success "Conda environment activated"
 }
@@ -260,9 +270,35 @@ log_info "Phase 5: Installing Node.js Tools"
 echo "----------------------------------------"
 
 install_node_tools() {
-    log_info "Installing pnpm globally..."
-    npm install -g pnpm
+    # Ensure conda environment is activated
+    eval "$(conda shell.bash hook)"
+    conda activate $CONDA_ENV_NAME
 
+    # Verify npm is available
+    log_info "Verifying npm installation..."
+    if ! command -v npm &> /dev/null; then
+        log_warning "npm not found, installing via conda..."
+        conda install -y --override-channels -c conda-forge npm
+    fi
+
+    # Check npm version
+    if command -v npm &> /dev/null; then
+        log_success "npm version: $(npm --version)"
+    else
+        log_error "Failed to install npm"
+        exit 1
+    fi
+
+    # Check if pnpm is already installed
+    if command -v pnpm &> /dev/null; then
+        log_success "pnpm already installed: $(pnpm --version)"
+    else
+        log_info "Installing pnpm globally..."
+        npm install -g pnpm
+        log_success "pnpm installed: $(pnpm --version)"
+    fi
+
+    # Verify all tools
     log_success "Node.js version: $(node --version)"
     log_success "npm version: $(npm --version)"
     log_success "pnpm version: $(pnpm --version)"
@@ -280,20 +316,37 @@ log_info "Phase 6: Installing System Dependencies"
 echo "----------------------------------------"
 
 install_system_deps() {
-    log_info "Installing system packages..."
+    log_info "Checking system packages..."
 
-    sudo apt-get update
-    sudo apt-get install -y \
-        curl \
-        wget \
-        git \
-        build-essential \
-        tmux \
-        jq \
-        awscli \
-        pkg-config \
-        libssl-dev \
-        clang
+    # Check if essential tools are already installed
+    local need_install=false
+    local missing_packages=()
+
+    for pkg in curl wget git build-essential tmux jq awscli pkg-config libssl-dev clang; do
+        if ! dpkg -l | grep -q "^ii  $pkg"; then
+            missing_packages+=("$pkg")
+            need_install=true
+        fi
+    done
+
+    if [ "$need_install" = false ]; then
+        log_success "All system packages already installed"
+    else
+        log_info "Installing missing system packages: ${missing_packages[@]}"
+        sudo apt-get update
+        sudo apt-get install -y \
+            curl \
+            wget \
+            git \
+            build-essential \
+            tmux \
+            jq \
+            awscli \
+            pkg-config \
+            libssl-dev \
+            clang
+        log_success "System packages installed"
+    fi
 
     # Install Rust and Cargo via rustup
     if ! command -v cargo &> /dev/null; then
@@ -302,10 +355,10 @@ install_system_deps() {
         source $HOME/.cargo/env
         log_success "Rust and Cargo installed"
     else
-        log_success "Rust and Cargo already installed"
+        log_success "Rust and Cargo already installed: $(cargo --version)"
     fi
 
-    log_success "System dependencies installed"
+    log_success "System dependencies verified"
 }
 
 install_system_deps
@@ -519,6 +572,12 @@ ENVEOF
 install_backend_deps() {
     cd "$OFFLINE_DIR/mission-control"
 
+    # Check if node_modules already exists
+    if [ -d "node_modules" ] && [ -f "node_modules/.pnpm/lock.yaml" ]; then
+        log_success "Backend dependencies already installed"
+        return 0
+    fi
+
     log_info "Installing backend dependencies with pnpm..."
     log_warning "This may take 5-10 minutes..."
 
@@ -533,6 +592,12 @@ install_backend_deps() {
 
 build_backend() {
     cd "$OFFLINE_DIR/mission-control"
+
+    # Check if build directory already exists
+    if [ -d "build" ] && [ -f "build/index.js" ]; then
+        log_success "Backend already built"
+        return 0
+    fi
 
     log_info "Building backend TypeScript..."
 
@@ -560,6 +625,12 @@ echo "----------------------------------------"
 
 install_frontend_deps() {
     cd "$OFFLINE_DIR/mission-control-frontend"
+
+    # Check if node_modules already exists
+    if [ -d "node_modules" ] && [ -f "package-lock.json" ]; then
+        log_success "Frontend dependencies already installed"
+        return 0
+    fi
 
     log_info "Installing frontend dependencies with npm..."
     log_warning "This may take 5-10 minutes..."

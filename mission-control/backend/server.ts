@@ -73,7 +73,13 @@ app.set("trust proxy", 1);
 
 // middlewares
 app.use(helmet());
-app.use(cors());
+// Enable CORS for mobile access - allow all origins in offline mode
+app.use(cors({
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'mac-address']
+}));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(
   bodyParser.urlencoded({
@@ -126,9 +132,15 @@ app.use("/api/v1/autonomy-agent", autonomyAgentRouter);
 app.use(errorHandler);
 
 // Socket Initialization and NameSpaces
+// Enable CORS for Socket.IO to allow mobile access
 const io = new Server(httpServer, {
   pingInterval: 25000,
-  pingTimeout: 60000
+  pingTimeout: 60000,
+  cors: {
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'POST']
+  }
 });
 MqttClientConnection.setIOServer(io);
 const masterNamespace = io.of("/v1/robot/master");
@@ -188,10 +200,11 @@ process.on("exit", async () => {
   }
 });
 
-httpServer.listen(PORT, () => {
+// Bind to 0.0.0.0 to allow access from mobile devices on same network
+httpServer.listen(Number(PORT), '0.0.0.0', () => {
   if (process.env.NODE_ENV === "development")
-    logger.info(`Server is running at http://localhost:${PORT}`);
-  else logger.info(`Server is running on port ${PORT}`);
+    logger.info(`Server is running at http://0.0.0.0:${PORT} (accessible from network)`);
+  else logger.info(`Server is running on port ${PORT} (accessible from network)`);
 });
 
 process.on("SIGINT", () => {

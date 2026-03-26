@@ -96,7 +96,63 @@ fi
 echo -e "${GREEN}✓ Frontend dependencies ready${NC}"
 echo ""
 
-echo -e "${YELLOW}[4/5] Creating tmux session...${NC}"
+# Get robot's IP address for mobile access
+echo -e "${YELLOW}[4/7] Detecting network configuration...${NC}"
+ROBOT_IP=$(hostname -I | awk '{print $1}')
+if [ -z "$ROBOT_IP" ]; then
+    ROBOT_IP=$(ip route get 1 | awk '{print $7;exit}')
+fi
+
+if [ -z "$ROBOT_IP" ]; then
+    echo -e "${YELLOW}  → Could not detect IP address, will use localhost${NC}"
+    ROBOT_IP="localhost"
+else
+    echo -e "${GREEN}✓ Robot IP detected: $ROBOT_IP${NC}"
+fi
+echo ""
+
+# Check and configure firewall rules for mobile access
+echo -e "${YELLOW}[5/7] Configuring firewall for mobile access...${NC}"
+
+# Check if UFW is installed
+if command -v ufw &> /dev/null; then
+    # Check if UFW is active
+    UFW_STATUS=$(sudo ufw status | grep -i "Status:" | awk '{print $2}')
+
+    if [ "$UFW_STATUS" = "active" ]; then
+        echo -e "${BLUE}  → UFW firewall is active, checking rules...${NC}"
+
+        # Check if ports are already allowed
+        NEED_RELOAD=false
+
+        if ! sudo ufw status | grep -q "3000/tcp"; then
+            echo -e "${BLUE}  → Adding rule for port 3000 (Frontend)${NC}"
+            sudo ufw allow 3000/tcp > /dev/null 2>&1
+            NEED_RELOAD=true
+        fi
+
+        if ! sudo ufw status | grep -q "5000/tcp"; then
+            echo -e "${BLUE}  → Adding rule for port 5000 (Backend)${NC}"
+            sudo ufw allow 5000/tcp > /dev/null 2>&1
+            NEED_RELOAD=true
+        fi
+
+        if [ "$NEED_RELOAD" = true ]; then
+            sudo ufw reload > /dev/null 2>&1
+            echo -e "${GREEN}✓ Firewall rules configured${NC}"
+        else
+            echo -e "${GREEN}✓ Firewall rules already configured${NC}"
+        fi
+    else
+        echo -e "${YELLOW}  → UFW is installed but not active${NC}"
+        echo -e "${BLUE}  → Ports 3000 and 5000 will be accessible${NC}"
+    fi
+else
+    echo -e "${BLUE}  → UFW not installed, ports will be accessible${NC}"
+fi
+echo ""
+
+echo -e "${YELLOW}[6/7] Creating tmux session...${NC}"
 
 # Create new tmux session with backend pane (detached)
 tmux new-session -d -s "$SESSION_NAME" -n "flo-offline" -c "$BACKEND_DIR"
@@ -139,7 +195,7 @@ tmux select-pane -t "$SESSION_NAME:0.0"
 echo -e "${GREEN}✓ tmux session created${NC}"
 echo ""
 
-echo -e "${YELLOW}[5/5] Summary${NC}"
+echo -e "${YELLOW}[7/7] Summary${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}FLO Offline Mode Started!${NC}"
 echo -e "${GREEN}========================================${NC}"
@@ -147,7 +203,7 @@ echo ""
 echo -e "${BLUE}tmux Session Details:${NC}"
 echo -e "  Session name: ${GREEN}$SESSION_NAME${NC}"
 echo -e "  Pane 0: Backend server       (port 5000)"
-echo -e "  Pane 1: Frontend dev server  (port 3002)"
+echo -e "  Pane 1: Frontend dev server  (port 3000)"
 echo -e "  Pane 2: Docker logs          (MongoDB, MinIO)"
 echo -e "  Pane 3: Redis with RedisJSON (port 6379)"
 echo ""
@@ -157,11 +213,35 @@ echo -e "  Detach from session: ${YELLOW}Ctrl+B then D${NC}"
 echo -e "  Kill session:       ${RED}tmux kill-session -t $SESSION_NAME${NC}"
 echo -e "  List sessions:      ${BLUE}tmux ls${NC}"
 echo ""
-echo -e "${BLUE}Access URLs:${NC}"
+echo -e "${BLUE}Access URLs (Local):${NC}"
 echo -e "  Backend API:     ${GREEN}http://localhost:5000${NC}"
-echo -e "  Frontend:        ${GREEN}http://localhost:3002${NC}"
+echo -e "  Frontend:        ${GREEN}http://localhost:3000${NC}"
 echo -e "  MinIO Console:   ${GREEN}http://localhost:9001${NC} (flo / flo123456)"
 echo -e "  Redis:           ${GREEN}localhost:6379${NC}"
 echo ""
+
+# Display mobile access information if IP was detected
+if [ "$ROBOT_IP" != "localhost" ]; then
+    echo -e "${GREEN}========================================${NC}"
+    echo -e "${GREEN}MOBILE ACCESS (Same WiFi Network)${NC}"
+    echo -e "${GREEN}========================================${NC}"
+    echo ""
+    echo -e "${BLUE}Robot IP Address:${NC} ${YELLOW}$ROBOT_IP${NC}"
+    echo ""
+    echo -e "${BLUE}Access from Mobile/Tablet:${NC}"
+    echo -e "  Frontend:        ${GREEN}http://$ROBOT_IP:3000${NC}"
+    echo -e "  Backend API:     ${GREEN}http://$ROBOT_IP:5000${NC}"
+    echo -e "  MinIO Console:   ${GREEN}http://$ROBOT_IP:9001${NC}"
+    echo ""
+    echo -e "${YELLOW}Instructions:${NC}"
+    echo -e "  1. Connect your mobile to the ${YELLOW}same WiFi network${NC}"
+    echo -e "  2. Open browser on mobile"
+    echo -e "  3. Navigate to: ${GREEN}http://$ROBOT_IP:3000${NC}"
+    echo ""
+    echo -e "${BLUE}Verify services are accessible:${NC}"
+    echo -e "  curl http://$ROBOT_IP:5000/api/v1/health"
+    echo ""
+fi
+
 echo -e "${YELLOW}Tip: Run 'tmux attach -t $SESSION_NAME' to view the running session${NC}"
 echo ""

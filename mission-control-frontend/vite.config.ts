@@ -37,7 +37,9 @@ export default defineConfig({
     },
     assetsInclude: ["**/*.gltf", "**/*.glb"],
     server: {
+        host: '0.0.0.0', // Bind to all network interfaces for mobile access
         port: 3000,
+        strictPort: true,
         watch: {
             ignored: ["**/aws/**", "**/node_modules/**", "**/dist/**"]
         },
