@@ -8,6 +8,7 @@
 # - Launches backend server in one pane
 # - Launches frontend dev server in another pane
 # - Shows Docker logs in third pane
+# - Starts Redis with RedisJSON module in fourth pane
 #
 # Usage: ./start-offline-mode.sh
 #        To attach: tmux attach -t flo-offline
@@ -27,6 +28,7 @@ NC='\033[0m' # No Color
 PROJECT_DIR="/home/shanks/Music/flo-offline-mode"
 BACKEND_DIR="$PROJECT_DIR/mission-control"
 FRONTEND_DIR="$PROJECT_DIR/mission-control-frontend"
+REDIS_DIR="$PROJECT_DIR/RedisJSON"
 SESSION_NAME="flo-offline"
 
 echo -e "${BLUE}========================================${NC}"
@@ -102,27 +104,34 @@ tmux new-session -d -s "$SESSION_NAME" -n "flo-offline" -c "$BACKEND_DIR"
 # Rename first window
 tmux rename-window -t "$SESSION_NAME:0" "flo-offline"
 
-# Split window horizontally (backend on left, frontend on right)
+# Split window horizontally (backend on left, right side for other services)
 tmux split-window -h -t "$SESSION_NAME:0" -c "$FRONTEND_DIR"
 
-# Split bottom-right pane vertically for docker logs
+# Split right pane vertically (frontend top, docker logs middle)
 tmux split-window -v -t "$SESSION_NAME:0.1" -c "$PROJECT_DIR"
 
-# Set pane layout (even-horizontal gives 3 equal panes)
-tmux select-layout -t "$SESSION_NAME:0" even-horizontal
+# Split bottom-right pane vertically again (docker logs top, redis bottom)
+tmux split-window -v -t "$SESSION_NAME:0.2" -c "$REDIS_DIR"
+
+# Set pane layout (tiled layout for 4 panes)
+tmux select-layout -t "$SESSION_NAME:0" tiled
 
 # Send commands to each pane
 # Pane 0: Backend
 tmux send-keys -t "$SESSION_NAME:0.0" "echo 'Starting backend server...'" C-m
-tmux send-keys -t "$SESSION_NAME:0.0" "sleep 2 && pnpm serve" C-m
+tmux send-keys -t "$SESSION_NAME:0.0" "sleep 3 && pnpm serve" C-m
 
 # Pane 1: Frontend
 tmux send-keys -t "$SESSION_NAME:0.1" "echo 'Starting frontend dev server...'" C-m
-tmux send-keys -t "$SESSION_NAME:0.1" "sleep 4 && pnpm dev" C-m
+tmux send-keys -t "$SESSION_NAME:0.1" "sleep 5 && pnpm dev" C-m
 
 # Pane 2: Docker logs
 tmux send-keys -t "$SESSION_NAME:0.2" "echo 'Docker container logs:'" C-m
 tmux send-keys -t "$SESSION_NAME:0.2" "sleep 1 && docker-compose logs -f" C-m
+
+# Pane 3: Redis with RedisJSON
+tmux send-keys -t "$SESSION_NAME:0.3" "echo 'Starting Redis with RedisJSON module...'" C-m
+tmux send-keys -t "$SESSION_NAME:0.3" "sleep 2 && redis-server --loadmodule target/release/librejson.so" C-m
 
 # Select backend pane (pane 0)
 tmux select-pane -t "$SESSION_NAME:0.0"
@@ -137,9 +146,10 @@ echo -e "${GREEN}========================================${NC}"
 echo ""
 echo -e "${BLUE}tmux Session Details:${NC}"
 echo -e "  Session name: ${GREEN}$SESSION_NAME${NC}"
-echo -e "  Pane 0 (left):   Backend server  (port 5000)"
-echo -e "  Pane 1 (top-right):   Frontend dev server (port 3002)"
-echo -e "  Pane 2 (bottom-right): Docker logs"
+echo -e "  Pane 0: Backend server       (port 5000)"
+echo -e "  Pane 1: Frontend dev server  (port 3002)"
+echo -e "  Pane 2: Docker logs          (MongoDB, MinIO)"
+echo -e "  Pane 3: Redis with RedisJSON (port 6379)"
 echo ""
 echo -e "${BLUE}tmux Commands:${NC}"
 echo -e "  Attach to session:  ${GREEN}tmux attach -t $SESSION_NAME${NC}"
@@ -151,6 +161,7 @@ echo -e "${BLUE}Access URLs:${NC}"
 echo -e "  Backend API:     ${GREEN}http://localhost:5000${NC}"
 echo -e "  Frontend:        ${GREEN}http://localhost:3002${NC}"
 echo -e "  MinIO Console:   ${GREEN}http://localhost:9001${NC} (flo / flo123456)"
+echo -e "  Redis:           ${GREEN}localhost:6379${NC}"
 echo ""
 echo -e "${YELLOW}Tip: Run 'tmux attach -t $SESSION_NAME' to view the running session${NC}"
 echo ""
