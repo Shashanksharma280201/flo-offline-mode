@@ -31,3 +31,4 @@ npm-debug.log*
 # Test files (can be removed if not needed)
 test-connection.js
 test-minio.js
+RedisJSON/

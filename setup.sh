@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #############################################
-# FLO OFFLINE MODE SETUP SCRIPT
-# Automated setup for offline autonomy system
+# FLO OFFLINE MODE - COMPLETE SETUP SCRIPT
+# Installs: Docker, Conda, Node.js, Redis, all dependencies
 #############################################
 
 set -e  # Exit on error
@@ -33,12 +33,26 @@ log_error() {
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 OFFLINE_DIR="$SCRIPT_DIR"
+CONDA_ENV_NAME="flo-offline"
+CONDA_INSTALL_DIR="$HOME/miniconda3"
+REDIS_DIR="$OFFLINE_DIR/RedisJSON"
+
+echo ""
+echo "========================================"
+echo "  FLO OFFLINE MODE - COMPLETE SETUP"
+echo "========================================"
+echo ""
+log_info "Installation directory: $OFFLINE_DIR"
+log_info "Conda environment: $CONDA_ENV_NAME"
+echo ""
 
 #############################################
 # PHASE 1: SYSTEM CHECKS
 #############################################
+
+log_info "Phase 1: System Checks"
+echo "----------------------------------------"
 
 check_os() {
     log_info "Checking operating system..."
@@ -49,7 +63,7 @@ check_os() {
         log_success "Detected: $OS $VER"
 
         if [[ "$OS" != "ubuntu" && "$OS" != "debian" ]]; then
-            log_warning "This script is optimized for Ubuntu/Debian. Other distros may require manual setup."
+            log_warning "This script is optimized for Ubuntu/Debian. Other distros may require manual adjustments."
         fi
     else
         log_error "Cannot detect OS"
@@ -63,19 +77,36 @@ check_internet() {
         log_success "Internet connection available"
         return 0
     else
-        log_warning "No internet connection. Will skip package installations."
-        return 1
+        log_error "No internet connection detected. Setup requires internet."
+        exit 1
     fi
 }
 
+check_os
+check_internet
+
+echo ""
+
 #############################################
-# PHASE 2: DEPENDENCY INSTALLATION
+# PHASE 2: INSTALL DOCKER
 #############################################
+
+log_info "Phase 2: Installing Docker"
+echo "----------------------------------------"
 
 install_docker() {
     if command -v docker &> /dev/null; then
         DOCKER_VERSION=$(docker --version | cut -d ' ' -f3 | cut -d ',' -f1)
         log_success "Docker already installed: $DOCKER_VERSION"
+
+        # Check if user is in docker group
+        if groups $USER | grep -q '\bdocker\b'; then
+            log_success "User is in docker group"
+        else
+            log_warning "Adding user to docker group..."
+            sudo usermod -aG docker $USER
+            log_warning "You need to log out and back in for docker group changes to take effect"
+        fi
         return 0
     fi
 
@@ -107,106 +138,213 @@ install_docker() {
     # Add user to docker group
     sudo usermod -aG docker $USER
 
+    # Start Docker service
+    sudo systemctl enable docker
+    sudo systemctl start docker
+
     log_success "Docker installed successfully"
-    log_warning "You may need to log out and back in for docker group changes to take effect"
+    log_warning "You need to log out and back in for docker group changes to take effect"
 }
 
-install_nodejs() {
-    if command -v node &> /dev/null; then
-        NODE_VERSION=$(node --version)
-        log_success "Node.js already installed: $NODE_VERSION"
+install_docker
 
-        # Check if version is >= 18
-        MAJOR_VERSION=$(echo $NODE_VERSION | cut -d 'v' -f2 | cut -d '.' -f1)
-        if [ "$MAJOR_VERSION" -lt 18 ]; then
-            log_warning "Node.js version is < 18. Upgrading recommended."
+echo ""
+
+#############################################
+# PHASE 3: INSTALL CONDA (MINICONDA)
+#############################################
+
+log_info "Phase 3: Installing Conda"
+echo "----------------------------------------"
+
+install_conda() {
+    if command -v conda &> /dev/null; then
+        CONDA_VERSION=$(conda --version)
+        log_success "Conda already installed: $CONDA_VERSION"
+        return 0
+    fi
+
+    log_info "Installing Miniconda..."
+
+    # Download Miniconda installer
+    MINICONDA_INSTALLER="Miniconda3-latest-Linux-x86_64.sh"
+    cd /tmp
+    wget https://repo.anaconda.com/miniconda/$MINICONDA_INSTALLER -O miniconda.sh
+
+    # Install Miniconda
+    bash miniconda.sh -b -p $CONDA_INSTALL_DIR
+
+    # Initialize conda
+    eval "$($CONDA_INSTALL_DIR/bin/conda shell.bash hook)"
+    $CONDA_INSTALL_DIR/bin/conda init bash
+
+    # Clean up installer
+    rm miniconda.sh
+
+    log_success "Miniconda installed: $CONDA_INSTALL_DIR"
+    log_info "Conda initialized in bash. Reloading shell configuration..."
+
+    # Source bashrc to activate conda
+    source ~/.bashrc || true
+}
+
+install_conda
+
+# Ensure conda is in PATH for this script
+export PATH="$CONDA_INSTALL_DIR/bin:$PATH"
+eval "$(conda shell.bash hook)" 2>/dev/null || true
+
+echo ""
+
+#############################################
+# PHASE 4: CREATE CONDA ENVIRONMENT
+#############################################
+
+log_info "Phase 4: Creating Conda Environment"
+echo "----------------------------------------"
+
+create_conda_env() {
+    log_info "Checking for existing conda environment: $CONDA_ENV_NAME"
+
+    if conda env list | grep -q "^$CONDA_ENV_NAME "; then
+        log_warning "Conda environment '$CONDA_ENV_NAME' already exists"
+        read -p "Remove and recreate? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            log_info "Removing existing environment..."
+            conda env remove -n $CONDA_ENV_NAME -y
+        else
+            log_info "Using existing environment"
+            conda activate $CONDA_ENV_NAME
+            return 0
         fi
-        return 0
     fi
 
-    log_info "Installing Node.js via NodeSource..."
+    log_info "Creating conda environment with Python 3.11, Node.js 20, and build tools..."
 
-    # Install Node.js 20.x
-    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    conda create -n $CONDA_ENV_NAME -y \
+        python=3.11 \
+        nodejs=20 \
+        npm \
+        gcc \
+        gxx \
+        make \
+        cmake \
+        rust \
+        cargo
 
-    log_success "Node.js installed: $(node --version)"
+    log_success "Conda environment '$CONDA_ENV_NAME' created"
+
+    # Activate environment
+    conda activate $CONDA_ENV_NAME
+    log_success "Conda environment activated"
 }
 
-install_pnpm() {
-    if command -v pnpm &> /dev/null; then
-        PNPM_VERSION=$(pnpm --version)
-        log_success "pnpm already installed: $PNPM_VERSION"
-        return 0
-    fi
+create_conda_env
 
-    log_info "Installing pnpm..."
+echo ""
+
+#############################################
+# PHASE 5: INSTALL NODE.JS TOOLS
+#############################################
+
+log_info "Phase 5: Installing Node.js Tools"
+echo "----------------------------------------"
+
+install_node_tools() {
+    log_info "Installing pnpm globally..."
     npm install -g pnpm
 
-    log_success "pnpm installed: $(pnpm --version)"
+    log_success "Node.js version: $(node --version)"
+    log_success "npm version: $(npm --version)"
+    log_success "pnpm version: $(pnpm --version)"
 }
 
-install_dependencies() {
-    log_info "Installing system dependencies..."
+install_node_tools
+
+echo ""
+
+#############################################
+# PHASE 6: INSTALL SYSTEM DEPENDENCIES
+#############################################
+
+log_info "Phase 6: Installing System Dependencies"
+echo "----------------------------------------"
+
+install_system_deps() {
+    log_info "Installing system packages..."
 
     sudo apt-get update
     sudo apt-get install -y \
         curl \
         wget \
         git \
-        build-essential
+        build-essential \
+        tmux \
+        jq \
+        awscli \
+        pkg-config \
+        libssl-dev \
+        clang
 
     log_success "System dependencies installed"
 }
 
+install_system_deps
+
+echo ""
+
 #############################################
-# PHASE 3: PROJECT SETUP
+# PHASE 7: BUILD REDIS WITH REDISJSON
 #############################################
 
-setup_project_structure() {
-    log_info "Setting up project structure..."
+log_info "Phase 7: Building Redis with RedisJSON"
+echo "----------------------------------------"
 
-    cd "$PROJECT_ROOT"
-
-    # Create flo-offline-mode if it doesn't exist
-    if [ ! -d "flo-offline-mode" ]; then
-        mkdir -p flo-offline-mode
-        log_success "Created flo-offline-mode directory"
-    else
-        log_info "flo-offline-mode directory already exists"
-    fi
-
-    # Copy mission-control if not already copied
-    if [ ! -d "flo-offline-mode/mission-control" ]; then
-        log_info "Copying mission-control to flo-offline-mode..."
-        cp -r mission-control flo-offline-mode/
-        log_success "mission-control copied"
-    else
-        log_info "mission-control already exists in flo-offline-mode"
-    fi
-
-    # Copy mission-control-frontend if not already copied
-    if [ ! -d "flo-offline-mode/mission-control-frontend" ]; then
-        log_info "Copying mission-control-frontend to flo-offline-mode..."
-        cp -r mission-control-frontend flo-offline-mode/
-        log_success "mission-control-frontend copied"
-    else
-        log_info "mission-control-frontend already exists in flo-offline-mode"
-    fi
-}
-
-setup_docker_compose() {
-    log_info "Setting up docker-compose.yml..."
-
-    cd "$OFFLINE_DIR"
-
-    # Check if docker-compose.yml already exists
-    if [ -f "docker-compose.yml" ]; then
-        log_info "docker-compose.yml already exists"
+build_redis() {
+    if [ -f "$REDIS_DIR/target/release/librejson.so" ]; then
+        log_info "RedisJSON already built"
         return 0
     fi
 
-    # Create docker-compose.yml
+    log_info "Cloning RedisJSON repository..."
+
+    if [ ! -d "$REDIS_DIR" ]; then
+        cd "$OFFLINE_DIR"
+        git clone https://github.com/RedisJSON/RedisJSON.git
+        cd "$REDIS_DIR"
+    else
+        cd "$REDIS_DIR"
+    fi
+
+    log_info "Building RedisJSON module (this may take 5-10 minutes)..."
+    cargo build --release
+
+    if [ -f "target/release/librejson.so" ]; then
+        log_success "RedisJSON module built successfully"
+        log_info "Module location: $REDIS_DIR/target/release/librejson.so"
+    else
+        log_error "Failed to build RedisJSON module"
+        exit 1
+    fi
+}
+
+build_redis
+
+echo ""
+
+#############################################
+# PHASE 8: SETUP DOCKER CONTAINERS
+#############################################
+
+log_info "Phase 8: Setting up Docker Containers"
+echo "----------------------------------------"
+
+setup_docker_compose() {
+    cd "$OFFLINE_DIR"
+
+    log_info "Creating docker-compose.yml..."
+
     cat > docker-compose.yml << 'EOF'
 version: '3.8'
 
@@ -274,10 +412,48 @@ EOF
     log_success "docker-compose.yml created"
 }
 
-setup_backend_config() {
-    log_info "Configuring backend for offline mode..."
+start_docker_containers() {
+    cd "$OFFLINE_DIR"
 
+    log_info "Starting Docker containers..."
+
+    # Create data directories
+    mkdir -p data/mongodb data/minio
+
+    # Pull images
+    log_info "Pulling Docker images (this may take a few minutes)..."
+    docker compose pull
+
+    # Start containers
+    docker compose up -d mongodb minio
+
+    # Wait for containers to start
+    log_info "Waiting for containers to start..."
+    sleep 10
+
+    # Initialize MinIO bucket
+    log_info "Initializing MinIO bucket..."
+    docker compose up minio-init
+
+    log_success "Docker containers started"
+}
+
+setup_docker_compose
+start_docker_containers
+
+echo ""
+
+#############################################
+# PHASE 9: CONFIGURE BACKEND
+#############################################
+
+log_info "Phase 9: Configuring Backend"
+echo "----------------------------------------"
+
+setup_backend() {
     cd "$OFFLINE_DIR/mission-control"
+
+    log_info "Checking backend .env configuration..."
 
     # Backup original .env
     if [ -f ".env" ] && [ ! -f ".env.backup" ]; then
@@ -285,19 +461,29 @@ setup_backend_config() {
         log_info "Original .env backed up to .env.backup"
     fi
 
-    # Update .env file
-    if grep -q "OFFLINE_MODE" .env; then
-        log_info ".env already configured for offline mode"
-    else
-        # Add offline mode flag
+    # Check if .env exists
+    if [ ! -f ".env" ]; then
+        log_error ".env file not found in mission-control/"
+        log_info "Please create .env file first"
+        exit 1
+    fi
+
+    # Update .env for offline mode
+    log_info "Updating .env for offline mode..."
+
+    # Add OFFLINE_MODE if not present
+    if ! grep -q "^OFFLINE_MODE" .env; then
         sed -i '1s/^/OFFLINE_MODE=true\n/' .env
+    else
+        sed -i 's/^OFFLINE_MODE=.*/OFFLINE_MODE=true/' .env
+    fi
 
-        # Update MongoDB URI
-        sed -i 's|^DB_URI.*|DB_URI=mongodb://localhost:27017/mission-control|' .env
+    # Update MongoDB URI
+    sed -i 's|^DB_URI=.*|DB_URI=mongodb://localhost:27017/mission-control|' .env
 
-        # Add MinIO configuration
-        if ! grep -q "AWS_ENDPOINT" .env; then
-            cat >> .env << 'EOF'
+    # Add MinIO configuration if not present
+    if ! grep -q "^AWS_ENDPOINT" .env; then
+        cat >> .env << 'ENVEOF'
 
 # MinIO Configuration (Offline S3)
 AWS_ENDPOINT=http://localhost:9000
@@ -306,227 +492,249 @@ AWS_SECRET_KEY=flo123456
 AWS_REGION=us-east-1
 AWS_BUCKET=lidar-maps
 AWS_FORCE_PATH_STYLE=true
-EOF
-        fi
-
-        log_success "Backend .env configured"
+ENVEOF
     fi
 
-    # Update server.ts for offline mode (skip MQTT)
-    if ! grep -q "OFFLINE_MODE" backend/server.ts; then
-        log_info "Updating server.ts to skip MQTT in offline mode..."
-
-        # This will be done manually or via sed/patch
-        log_warning "Please verify server.ts has MQTT offline mode checks"
-    fi
+    log_success "Backend .env configured for offline mode"
 }
 
-setup_backend_dependencies() {
-    log_info "Installing backend dependencies..."
-
+install_backend_deps() {
     cd "$OFFLINE_DIR/mission-control"
 
-    if [ -d "node_modules" ]; then
-        log_info "node_modules already exists, skipping install"
-    else
-        pnpm install
-        log_success "Backend dependencies installed"
-    fi
+    log_info "Installing backend dependencies with pnpm..."
+    log_warning "This may take 5-10 minutes..."
+
+    # Activate conda environment
+    eval "$(conda shell.bash hook)"
+    conda activate $CONDA_ENV_NAME
+
+    pnpm install
+
+    log_success "Backend dependencies installed"
 }
 
-setup_frontend_dependencies() {
-    log_info "Installing frontend dependencies..."
+build_backend() {
+    cd "$OFFLINE_DIR/mission-control"
 
+    log_info "Building backend TypeScript..."
+
+    # Activate conda environment
+    eval "$(conda shell.bash hook)"
+    conda activate $CONDA_ENV_NAME
+
+    pnpm run build
+
+    log_success "Backend built successfully"
+}
+
+setup_backend
+install_backend_deps
+build_backend
+
+echo ""
+
+#############################################
+# PHASE 10: CONFIGURE FRONTEND
+#############################################
+
+log_info "Phase 10: Configuring Frontend"
+echo "----------------------------------------"
+
+install_frontend_deps() {
     cd "$OFFLINE_DIR/mission-control-frontend"
 
-    if [ -d "node_modules" ]; then
-        log_info "node_modules already exists, skipping install"
-    else
-        npm install
-        log_success "Frontend dependencies installed"
-    fi
+    log_info "Installing frontend dependencies with npm..."
+    log_warning "This may take 5-10 minutes..."
+
+    # Activate conda environment
+    eval "$(conda shell.bash hook)"
+    conda activate $CONDA_ENV_NAME
+
+    npm install
+
+    log_success "Frontend dependencies installed"
 }
 
+install_frontend_deps
+
+echo ""
+
 #############################################
-# PHASE 4: DOCKER CONTAINERS
+# PHASE 11: MAKE SCRIPTS EXECUTABLE
 #############################################
 
-start_docker_containers() {
-    log_info "Starting Docker containers..."
+log_info "Phase 11: Setting Script Permissions"
+echo "----------------------------------------"
 
+setup_scripts() {
     cd "$OFFLINE_DIR"
 
-    # Pull images first
-    log_info "Pulling Docker images..."
-    docker compose pull
+    log_info "Making scripts executable..."
 
-    # Start containers
-    docker compose up -d mongodb minio
+    chmod +x setup.sh
+    chmod +x start-offline-mode.sh
+    chmod +x install-boot-service.sh
+    chmod +x sync-lidar-pull.sh
+    chmod +x sync-lidar-push.sh
 
-    # Wait for containers to be healthy
-    log_info "Waiting for containers to start..."
-    sleep 10
-
-    # Initialize MinIO bucket
-    docker compose up minio-init
-
-    log_success "Docker containers started"
-}
-
-#############################################
-# PHASE 5: DATA IMPORT
-#############################################
-
-import_production_data() {
-    log_info "Setting up data import scripts..."
-
-    cd "$OFFLINE_DIR"
-
-    # Check if scripts exist
-    if [ ! -f "export-prod-data.sh" ] || [ ! -f "import-to-local.sh" ]; then
-        log_error "Data import scripts not found"
-        log_info "Please ensure export-prod-data.sh and import-to-local.sh exist"
-        return 1
+    if [ -f "export-prod-data.sh" ]; then
+        chmod +x export-prod-data.sh
     fi
 
-    # Make scripts executable
-    chmod +x export-prod-data.sh import-to-local.sh
+    if [ -f "import-to-local.sh" ]; then
+        chmod +x import-to-local.sh
+    fi
 
-    log_info "Data import scripts ready"
-    log_warning "Run './export-prod-data.sh' to download production data (requires internet)"
-    log_warning "Then run './import-to-local.sh' to import into local MongoDB"
+    log_success "Script permissions set"
 }
 
+setup_scripts
+
+echo ""
+
 #############################################
-# PHASE 6: VERIFICATION
+# PHASE 12: VERIFICATION
 #############################################
+
+log_info "Phase 12: Verifying Installation"
+echo "----------------------------------------"
 
 verify_setup() {
-    log_info "Verifying setup..."
-
     local errors=0
 
-    # Check Docker
+    log_info "Checking Docker..."
     if ! docker ps | grep -q flo-offline-mongodb; then
         log_error "MongoDB container not running"
         errors=$((errors+1))
     else
-        log_success "MongoDB container running"
+        log_success "✓ MongoDB container running"
     fi
 
     if ! docker ps | grep -q flo-offline-minio; then
         log_error "MinIO container not running"
         errors=$((errors+1))
     else
-        log_success "MinIO container running"
+        log_success "✓ MinIO container running"
     fi
 
-    # Check MinIO health
+    log_info "Checking MinIO health..."
     if curl -sf http://localhost:9000/minio/health/live > /dev/null; then
-        log_success "MinIO is healthy"
+        log_success "✓ MinIO is healthy"
     else
         log_error "MinIO health check failed"
         errors=$((errors+1))
     fi
 
-    # Check project structure
-    if [ -d "$OFFLINE_DIR/mission-control" ]; then
-        log_success "Backend directory exists"
+    log_info "Checking Conda environment..."
+    if conda env list | grep -q "^$CONDA_ENV_NAME "; then
+        log_success "✓ Conda environment '$CONDA_ENV_NAME' exists"
     else
-        log_error "Backend directory missing"
+        log_error "Conda environment not found"
         errors=$((errors+1))
     fi
 
-    if [ -d "$OFFLINE_DIR/mission-control-frontend" ]; then
-        log_success "Frontend directory exists"
+    log_info "Checking Redis module..."
+    if [ -f "$REDIS_DIR/target/release/librejson.so" ]; then
+        log_success "✓ RedisJSON module built"
     else
-        log_error "Frontend directory missing"
+        log_error "RedisJSON module not found"
+        errors=$((errors+1))
+    fi
+
+    log_info "Checking backend..."
+    if [ -d "$OFFLINE_DIR/mission-control/node_modules" ]; then
+        log_success "✓ Backend dependencies installed"
+    else
+        log_error "Backend node_modules missing"
+        errors=$((errors+1))
+    fi
+
+    if [ -d "$OFFLINE_DIR/mission-control/build" ]; then
+        log_success "✓ Backend built"
+    else
+        log_warning "Backend build directory missing (will build on first run)"
+    fi
+
+    log_info "Checking frontend..."
+    if [ -d "$OFFLINE_DIR/mission-control-frontend/node_modules" ]; then
+        log_success "✓ Frontend dependencies installed"
+    else
+        log_error "Frontend node_modules missing"
         errors=$((errors+1))
     fi
 
     return $errors
 }
 
-#############################################
-# MAIN EXECUTION
-#############################################
-
-main() {
+echo ""
+if verify_setup; then
     echo ""
     echo "========================================"
-    echo "  FLO OFFLINE MODE SETUP"
+    log_success "SETUP COMPLETE!"
     echo "========================================"
     echo ""
-
-    # Phase 1: System checks
-    check_os
-    HAS_INTERNET=0
-    check_internet && HAS_INTERNET=1 || HAS_INTERNET=0
-
-    # Phase 2: Install dependencies (if internet available)
-    if [ $HAS_INTERNET -eq 1 ]; then
-        install_dependencies
-        install_docker
-        install_nodejs
-        install_pnpm
-    else
-        log_warning "Skipping dependency installation (no internet)"
-    fi
-
-    # Phase 3: Project setup
-    setup_project_structure
-    setup_docker_compose
-    setup_backend_config
-
-    if [ $HAS_INTERNET -eq 1 ]; then
-        setup_backend_dependencies
-        setup_frontend_dependencies
-    else
-        log_warning "Skipping npm/pnpm install (no internet)"
-    fi
-
-    # Phase 4: Docker containers
-    start_docker_containers
-
-    # Phase 5: Data import setup
-    import_production_data
-
-    # Phase 6: Verification
+    echo "Installation Summary:"
+    echo "  • Docker installed and containers running"
+    echo "  • Conda environment: $CONDA_ENV_NAME"
+    echo "  • Node.js: $(node --version)"
+    echo "  • Backend dependencies: installed"
+    echo "  • Frontend dependencies: installed"
+    echo "  • Redis with RedisJSON: built"
     echo ""
-    log_info "Running verification checks..."
-    if verify_setup; then
-        echo ""
-        echo "========================================"
-        log_success "SETUP COMPLETE!"
-        echo "========================================"
-        echo ""
-        echo "Next steps:"
-        echo ""
-        echo "1. Import production data:"
-        echo "   cd $OFFLINE_DIR"
-        echo "   ./export-prod-data.sh    # Download from production (requires internet)"
-        echo "   ./import-to-local.sh      # Import to local MongoDB"
-        echo ""
-        echo "2. Start backend:"
-        echo "   cd mission-control"
-        echo "   pnpm serve"
-        echo ""
-        echo "3. Start frontend:"
-        echo "   cd mission-control-frontend"
-        echo "   npm run dev"
-        echo ""
-        echo "4. Access application:"
-        echo "   http://localhost:3000"
-        echo ""
-        echo "5. MinIO Web UI:"
-        echo "   http://localhost:9001"
-        echo "   User: flo / Pass: flo123456"
-        echo ""
-    else
-        log_error "Setup verification failed. Please check errors above."
-        exit 1
-    fi
-}
-
-# Run main function
-main "$@"
+    echo "----------------------------------------"
+    echo "NEXT STEPS:"
+    echo "----------------------------------------"
+    echo ""
+    echo "1. ACTIVATE CONDA ENVIRONMENT (in new terminal):"
+    echo "   conda activate $CONDA_ENV_NAME"
+    echo ""
+    echo "2. START REDIS SERVER:"
+    echo "   cd $REDIS_DIR"
+    echo "   redis-server --loadmodule target/release/librejson.so"
+    echo ""
+    echo "3. START SERVICES (option A - manual):"
+    echo "   # Terminal 1 - Backend"
+    echo "   cd $OFFLINE_DIR/mission-control"
+    echo "   conda activate $CONDA_ENV_NAME"
+    echo "   pnpm serve"
+    echo ""
+    echo "   # Terminal 2 - Frontend"
+    echo "   cd $OFFLINE_DIR/mission-control-frontend"
+    echo "   conda activate $CONDA_ENV_NAME"
+    echo "   npm run dev"
+    echo ""
+    echo "3. START SERVICES (option B - tmux):"
+    echo "   cd $OFFLINE_DIR"
+    echo "   ./start-offline-mode.sh"
+    echo ""
+    echo "4. ACCESS APPLICATION:"
+    echo "   Frontend: http://localhost:3000"
+    echo "   Backend:  http://localhost:5000"
+    echo "   MinIO UI: http://localhost:9001 (user: flo / pass: flo123456)"
+    echo ""
+    echo "5. OPTIONAL - Setup auto-start on boot:"
+    echo "   sudo ./install-boot-service.sh"
+    echo ""
+    echo "----------------------------------------"
+    echo "DATA SYNCHRONIZATION:"
+    echo "----------------------------------------"
+    echo ""
+    echo "Pull LIDAR maps from AWS S3:"
+    echo "  ./sync-lidar-pull.sh"
+    echo ""
+    echo "Push LIDAR maps to AWS S3:"
+    echo "  ./sync-lidar-push.sh"
+    echo ""
+    echo "----------------------------------------"
+    echo "IMPORTANT NOTES:"
+    echo "----------------------------------------"
+    echo ""
+    echo "• You may need to LOG OUT and LOG BACK IN for docker group to take effect"
+    echo "• Always activate conda environment before running services:"
+    echo "  conda activate $CONDA_ENV_NAME"
+    echo "• Redis must be started manually before backend"
+    echo ""
+else
+    log_error "Setup verification failed. Please check errors above."
+    exit 1
+fi
