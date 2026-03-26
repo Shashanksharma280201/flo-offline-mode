@@ -1,0 +1,36 @@
+// Overwriting react-big-calendar colors to suit our theme
+@use "sass:color";
+
+$out-of-range-color: color.scale(#333, $lightness: 40%);
+$out-of-range-bg-color: #46464686;
+
+$calendar-border: #464646;
+$cell-border: #464646;
+
+$border-color: #464646;
+
+// Each calendar segment is 1/7th.
+$segment-width: 0.14286%;
+
+$time-selection-color: white;
+$time-selection-bg-color: rgba(0, 0, 0, 0.5);
+$date-selection-bg-color: rgba(0, 0, 0, 0.1);
+
+$event-bg: #9233ea4e;
+$event-selected-bg: #9233ea;
+$event-border: #9333ea;
+$event-outline: none;
+$event-color: #fff;
+$event-border-radius: 5px;
+$event-padding: 2px 5px;
+$event-zindex: 4;
+
+$btn-color: #373a3c;
+$btn-bg: #fff;
+$btn-border: #ccc;
+
+$current-time-color: #74ad31;
+
+$rbc-css-prefix: rbc-i;
+
+$today-highlight-bg: #ffffff00;

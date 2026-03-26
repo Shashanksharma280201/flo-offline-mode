@@ -1,0 +1,147 @@
+{
+  "description": "Test coordinates with known GPS, UTM, map, and pixel values for validation",
+  "mapConfig": {
+    "resolution": 0.05,
+    "origin": {
+      "x": -8.407282,
+      "y": -81.081612
+    },
+    "imageWidth": 3363,
+    "imageHeight": 3211
+  },
+  "testPoints": [
+    {
+      "name": "Origin point",
+      "gps": {
+        "lat": 12.9716,
+        "lng": 77.5946
+      },
+      "utm": {
+        "easting": 799060.375,
+        "northing": 1413460.75
+      },
+      "mapCoords": {
+        "x": -0.002923,
+        "y": -0.000017
+      },
+      "expectedPixel": {
+        "x": 168.146,
+        "y": 1621.623
+      }
+    },
+    {
+      "name": "Test point 1",
+      "gps": {
+        "lat": 12.97165,
+        "lng": 77.59465
+      },
+      "utm": {
+        "easting": 799051.5,
+        "northing": 1413462.5
+      },
+      "mapCoords": {
+        "x": 8.656361,
+        "y": 3.815798
+      },
+      "expectedPixel": {
+        "x": 341.273,
+        "y": 1697.943
+      }
+    },
+    {
+      "name": "Test point 2",
+      "gps": {
+        "lat": 12.9717,
+        "lng": 77.5947
+      },
+      "utm": {
+        "easting": 799041.5,
+        "northing": 1413463.375
+      },
+      "mapCoords": {
+        "x": 17.257387,
+        "y": 8.831052
+      },
+      "expectedPixel": {
+        "x": 513.294,
+        "y": 1798.258
+      }
+    },
+    {
+      "name": "Negative coordinates test",
+      "gps": {
+        "lat": 12.97155,
+        "lng": 77.5945
+      },
+      "mapCoords": {
+        "x": -5.0,
+        "y": -3.0
+      },
+      "expectedPixel": {
+        "x": 68.146,
+        "y": 1561.623
+      }
+    },
+    {
+      "name": "Large positive coordinates test",
+      "mapCoords": {
+        "x": 100.0,
+        "y": 50.0
+      },
+      "expectedPixel": {
+        "x": 2168.146,
+        "y": 2621.623
+      }
+    }
+  ],
+  "pathTestData": [
+    {
+      "name": "Short path (3 points)",
+      "points": [
+        { "x": 0.0, "y": 0.0 },
+        { "x": 0.5, "y": 0.0 },
+        { "x": 1.0, "y": 0.0 }
+      ],
+      "totalDistance": 1.0,
+      "shouldPass": true
+    },
+    {
+      "name": "Path too short (< 3 points)",
+      "points": [
+        { "x": 0.0, "y": 0.0 },
+        { "x": 0.5, "y": 0.0 }
+      ],
+      "totalDistance": 0.5,
+      "shouldPass": false,
+      "expectedError": "Path too short"
+    },
+    {
+      "name": "Path too short distance (< 1 meter)",
+      "points": [
+        { "x": 0.0, "y": 0.0 },
+        { "x": 0.2, "y": 0.0 },
+        { "x": 0.4, "y": 0.0 }
+      ],
+      "totalDistance": 0.4,
+      "shouldPass": false,
+      "expectedError": "Robot did not move enough"
+    },
+    {
+      "name": "Valid path (10 points, 5 meters)",
+      "points": [
+        { "x": 0.0, "y": 0.0 },
+        { "x": 0.5, "y": 0.0 },
+        { "x": 1.0, "y": 0.0 },
+        { "x": 1.5, "y": 0.5 },
+        { "x": 2.0, "y": 1.0 },
+        { "x": 2.5, "y": 1.5 },
+        { "x": 3.0, "y": 2.0 },
+        { "x": 3.5, "y": 2.5 },
+        { "x": 4.0, "y": 3.0 },
+        { "x": 4.5, "y": 3.5 }
+      ],
+      "totalDistance": 7.07,
+      "shouldPass": true
+    }
+  ]
+}

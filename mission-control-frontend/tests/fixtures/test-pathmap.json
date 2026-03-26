@@ -1,0 +1,155 @@
+{
+  "description": "Test PathMap data with stations, paths, boundaries, and obstacles",
+  "testPathMaps": [
+    {
+      "id": "test-pathmap-gps-1",
+      "name": "Test GPS PathMap",
+      "owner": "test-user-123",
+      "frame": "utm",
+      "lidarMapName": null,
+      "stations": [
+        {
+          "id": "station-1",
+          "name": "Station A",
+          "lat": 12.9716,
+          "lng": 77.5946
+        },
+        {
+          "id": "station-2",
+          "name": "Station B",
+          "lat": 12.97165,
+          "lng": 77.59465
+        },
+        {
+          "id": "station-3",
+          "name": "Station C",
+          "lat": 12.9717,
+          "lng": 77.5947
+        }
+      ],
+      "paths": {
+        "station-1": [
+          {
+            "to": "station-2",
+            "gps": [
+              { "lat": 12.9716, "lng": 77.5946 },
+              { "lat": 12.971625, "lng": 77.594625 },
+              { "lat": 12.97165, "lng": 77.59465 }
+            ],
+            "utm": [
+              { "x": 799060.375, "y": 1413460.75 },
+              { "x": 799055.937, "y": 1413461.625 },
+              { "x": 799051.5, "y": 1413462.5 }
+            ]
+          }
+        ],
+        "station-2": [
+          {
+            "to": "station-3",
+            "gps": [
+              { "lat": 12.97165, "lng": 77.59465 },
+              { "lat": 12.971675, "lng": 77.594675 },
+              { "lat": 12.9717, "lng": 77.5947 }
+            ],
+            "utm": [
+              { "x": 799051.5, "y": 1413462.5 },
+              { "x": 799046.5, "y": 1413462.937 },
+              { "x": 799041.5, "y": 1413463.375 }
+            ]
+          }
+        ]
+      },
+      "boundaries": [],
+      "obstacles": [],
+      "missions": [],
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "test-pathmap-lidar-1",
+      "name": "Test LIDAR PathMap",
+      "owner": "test-user-123",
+      "frame": "utm",
+      "lidarMapName": "test_lidar_map_1",
+      "stations": [
+        {
+          "id": "station-lidar-1",
+          "name": "LIDAR Station A",
+          "lat": 12.9716,
+          "lng": 77.5946
+        },
+        {
+          "id": "station-lidar-2",
+          "name": "LIDAR Station B",
+          "lat": 12.97165,
+          "lng": 77.59465
+        }
+      ],
+      "paths": {},
+      "boundaries": [
+        {
+          "id": "boundary-1",
+          "name": "Test Boundary",
+          "points": [
+            { "lat": 12.9716, "lng": 77.5946 },
+            { "lat": 12.97165, "lng": 77.59465 },
+            { "lat": 12.9717, "lng": 77.5947 },
+            { "lat": 12.9716, "lng": 77.5946 }
+          ]
+        }
+      ],
+      "obstacles": [
+        {
+          "id": "obstacle-1",
+          "name": "Test Obstacle",
+          "points": [
+            { "lat": 12.97162, "lng": 77.59462 },
+            { "lat": 12.97163, "lng": 77.59463 }
+          ]
+        }
+      ],
+      "missions": [],
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "test-pathmap-nonrtk-1",
+      "name": "Test Non-RTK PathMap",
+      "owner": "test-user-123",
+      "frame": "map_base_link",
+      "lidarMapName": null,
+      "stations": [
+        {
+          "id": "station-nonrtk-1",
+          "name": "Non-RTK Station A",
+          "lat": 12.9716,
+          "lng": 77.5946
+        }
+      ],
+      "paths": {},
+      "boundaries": [],
+      "obstacles": [],
+      "missions": [],
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ],
+  "testMissions": [
+    {
+      "_id": "mission-1",
+      "name": "Test Mission A to B",
+      "source": "station-1",
+      "destination": "station-2",
+      "status": "pending",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "_id": "mission-2",
+      "name": "Test Mission B to C",
+      "source": "station-2",
+      "destination": "station-3",
+      "status": "completed",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}

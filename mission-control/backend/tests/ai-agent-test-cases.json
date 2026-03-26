@@ -1,0 +1,327 @@
+{
+  "testSuites": [
+    {
+      "name": "Operator Queries",
+      "description": "Test AI understanding of operator-related queries",
+      "tests": [
+        {
+          "id": "OP-1",
+          "query": "list all operators",
+          "expectedFunctions": ["listOperators"],
+          "expectedNavigation": null,
+          "expectedResponse": "List of all operators with names and phone numbers"
+        },
+        {
+          "id": "OP-2",
+          "query": "show operators",
+          "expectedFunctions": ["listOperators", "navigateToPage"],
+          "expectedNavigation": "/operators",
+          "expectedResponse": "List operators and navigate to operators page"
+        },
+        {
+          "id": "OP-3",
+          "query": "show operator details",
+          "expectedFunctions": ["searchOperators", "getOperatorDetails"],
+          "expectedNavigation": null,
+          "expectedResponse": "Search for operator and get their details"
+        },
+        {
+          "id": "OP-4",
+          "query": "which robots is operator John using",
+          "expectedFunctions": ["searchOperators", "getOperatorDetails"],
+          "expectedNavigation": null,
+          "expectedResponse": "Search for John and return assigned robots"
+        }
+      ]
+    },
+    {
+      "name": "Client/Site Queries",
+      "description": "Test AI understanding of client-related queries",
+      "tests": [
+        {
+          "id": "CL-1",
+          "query": "list all clients",
+          "expectedFunctions": ["listClients"],
+          "expectedNavigation": null,
+          "expectedResponse": "List of all client sites"
+        },
+        {
+          "id": "CL-2",
+          "query": "list all active clients",
+          "expectedFunctions": ["listClients"],
+          "expectedParameters": {"isActive": true},
+          "expectedNavigation": null,
+          "expectedResponse": "List only active client sites"
+        },
+        {
+          "id": "CL-3",
+          "query": "show clients",
+          "expectedFunctions": ["listClients", "navigateToPage"],
+          "expectedNavigation": "/clients",
+          "expectedResponse": "List clients and navigate to clients page"
+        },
+        {
+          "id": "CL-4",
+          "query": "operators at client ABC",
+          "expectedFunctions": ["searchClients", "getClientDetails"],
+          "expectedNavigation": null,
+          "expectedResponse": "Search for client ABC and return operators assigned to it"
+        }
+      ]
+    },
+    {
+      "name": "Robot Queries",
+      "description": "Test AI understanding of robot-related queries with name variations",
+      "tests": [
+        {
+          "id": "RO-1",
+          "query": "list all robots",
+          "expectedFunctions": ["listRobots"],
+          "expectedNavigation": null,
+          "expectedResponse": "List of all robots"
+        },
+        {
+          "id": "RO-2",
+          "query": "list idle robots",
+          "expectedFunctions": ["listRobots"],
+          "expectedParameters": {"status": "idle"},
+          "expectedNavigation": null,
+          "expectedResponse": "List robots with idle status"
+        },
+        {
+          "id": "RO-3",
+          "query": "show robot MMR-31",
+          "expectedFunctions": ["searchRobots", "getRobotDetails", "navigateToPage"],
+          "expectedNavigation": "/robots/:id",
+          "expectedResponse": "Search for MMR-31, get details, and navigate to robot page"
+        },
+        {
+          "id": "RO-4",
+          "query": "show robot 31",
+          "expectedFunctions": ["searchRobots", "getRobotDetails"],
+          "expectedNavigation": null,
+          "expectedResponse": "Smart search for robot 31 (normalizes to MMR-31)"
+        },
+        {
+          "id": "RO-5",
+          "query": "get details of robot MMR 31",
+          "expectedFunctions": ["searchRobots", "getRobotDetails"],
+          "expectedNavigation": null,
+          "expectedResponse": "Smart search for MMR 31 (normalizes to MMR-31)"
+        },
+        {
+          "id": "RO-6",
+          "query": "what is the status of robot 31",
+          "expectedFunctions": ["searchRobots", "getRobotDetails"],
+          "expectedNavigation": null,
+          "expectedResponse": "Get robot details including status"
+        }
+      ]
+    },
+    {
+      "name": "Mission Execution",
+      "description": "Test AI understanding of mission commands with smart matching",
+      "tests": [
+        {
+          "id": "MI-1",
+          "query": "send MMR-31 to the kitchen in the office",
+          "expectedFunctions": ["executeRobotMission"],
+          "expectedParameters": {
+            "robotId": "MMR-31",
+            "pathMapName": "office",
+            "missionName": "kitchen"
+          },
+          "expectedNavigation": null,
+          "expectedResponse": "Execute mission with smart normalization for all three parameters"
+        },
+        {
+          "id": "MI-2",
+          "query": "send robot 31 to kitchen in office 1",
+          "expectedFunctions": ["executeRobotMission"],
+          "expectedParameters": {
+            "robotId": "robot 31",
+            "pathMapName": "office 1",
+            "missionName": "kitchen"
+          },
+          "expectedNavigation": null,
+          "expectedResponse": "Smart normalization: robot 31→MMR-31, office 1→office-1"
+        },
+        {
+          "id": "MI-3",
+          "query": "abort mission on robot 31",
+          "expectedFunctions": ["abortRobotMission"],
+          "expectedParameters": {
+            "robotId": "robot 31"
+          },
+          "expectedNavigation": null,
+          "expectedResponse": "Abort mission with smart robot search"
+        },
+        {
+          "id": "MI-4",
+          "query": "list available missions",
+          "expectedFunctions": ["listPathMaps"],
+          "expectedNavigation": null,
+          "expectedResponse": "List all pathmaps with their missions"
+        }
+      ]
+    },
+    {
+      "name": "Analytics Queries",
+      "description": "Test AI understanding of analytics and performance queries",
+      "tests": [
+        {
+          "id": "AN-1",
+          "query": "show trip analytics",
+          "expectedFunctions": ["getTripAnalytics"],
+          "expectedNavigation": null,
+          "expectedResponse": "Get trip statistics"
+        },
+        {
+          "id": "AN-2",
+          "query": "which robot has most trips",
+          "expectedFunctions": ["getTopPerformers"],
+          "expectedParameters": {
+            "type": "robots",
+            "metric": "trips"
+          },
+          "expectedNavigation": null,
+          "expectedResponse": "Get top performing robots by trip count"
+        },
+        {
+          "id": "AN-3",
+          "query": "show top 5 operators",
+          "expectedFunctions": ["getTopPerformers"],
+          "expectedParameters": {
+            "type": "operators",
+            "metric": "trips",
+            "limit": 5
+          },
+          "expectedNavigation": null,
+          "expectedResponse": "Get top 5 operators"
+        }
+      ]
+    },
+    {
+      "name": "Fleet Queries",
+      "description": "Test AI understanding of fleet-related queries",
+      "tests": [
+        {
+          "id": "FL-1",
+          "query": "show fleet overview",
+          "expectedFunctions": ["getFleetOverview"],
+          "expectedNavigation": null,
+          "expectedResponse": "Get complete fleet status overview"
+        },
+        {
+          "id": "FL-2",
+          "query": "how many robots are charging",
+          "expectedFunctions": ["getRobotsByStatus"],
+          "expectedNavigation": null,
+          "expectedResponse": "Get robots grouped by status including charging count"
+        }
+      ]
+    },
+    {
+      "name": "Navigation Commands",
+      "description": "Test AI understanding of pure navigation commands",
+      "tests": [
+        {
+          "id": "NAV-1",
+          "query": "show dashboard",
+          "expectedFunctions": ["navigateToPage"],
+          "expectedNavigation": "/dashboard",
+          "expectedResponse": "Navigate to dashboard"
+        },
+        {
+          "id": "NAV-2",
+          "query": "show leads",
+          "expectedFunctions": ["navigateToPage"],
+          "expectedNavigation": "/leads",
+          "expectedResponse": "Navigate to leads page"
+        },
+        {
+          "id": "NAV-3",
+          "query": "show analytics",
+          "expectedFunctions": ["navigateToPage"],
+          "expectedNavigation": "/analytics",
+          "expectedResponse": "Navigate to analytics page"
+        },
+        {
+          "id": "NAV-4",
+          "query": "show inventory",
+          "expectedFunctions": ["navigateToPage"],
+          "expectedNavigation": "/inventory",
+          "expectedResponse": "Navigate to inventory page"
+        },
+        {
+          "id": "NAV-5",
+          "query": "show qc submissions",
+          "expectedFunctions": ["navigateToPage"],
+          "expectedNavigation": "/qc-submissions",
+          "expectedResponse": "Navigate to QC submissions page"
+        },
+        {
+          "id": "NAV-6",
+          "query": "show master data",
+          "expectedFunctions": ["navigateToPage"],
+          "expectedNavigation": "/master-data",
+          "expectedResponse": "Navigate to master data page"
+        }
+      ]
+    },
+    {
+      "name": "Entity Disambiguation",
+      "description": "Test AI's ability to distinguish between clients, operators, and robots",
+      "tests": [
+        {
+          "id": "DIS-1",
+          "query": "list all sites",
+          "expectedFunctions": ["listClients"],
+          "expectedNavigation": null,
+          "expectedResponse": "Should call CLIENT functions (sites = physical locations)"
+        },
+        {
+          "id": "DIS-2",
+          "query": "list all workers",
+          "expectedFunctions": ["listOperators"],
+          "expectedNavigation": null,
+          "expectedResponse": "Should call OPERATOR functions (workers = people)"
+        },
+        {
+          "id": "DIS-3",
+          "query": "list all machines",
+          "expectedFunctions": ["listRobots"],
+          "expectedNavigation": null,
+          "expectedResponse": "Should call ROBOT functions (machines = robots)"
+        }
+      ]
+    },
+    {
+      "name": "Complex Multi-Function Queries",
+      "description": "Test AI handling of queries requiring multiple function calls",
+      "tests": [
+        {
+          "id": "MF-1",
+          "query": "show me robot 31 details",
+          "expectedFunctions": ["searchRobots", "getRobotDetails", "navigateToPage"],
+          "expectedNavigation": "/robots/:id",
+          "expectedResponse": "Search robot, get details, and navigate to robot page"
+        },
+        {
+          "id": "MF-2",
+          "query": "show operators at client ABC",
+          "expectedFunctions": ["searchClients", "getClientDetails", "navigateToPage"],
+          "expectedNavigation": null,
+          "expectedResponse": "Search client, get details (includes operators), optionally navigate"
+        }
+      ]
+    }
+  ],
+  "totalTests": 45,
+  "categories": {
+    "dataRetrieval": "Tests that verify correct API calls to fetch data",
+    "navigation": "Tests that verify correct page navigation",
+    "smartMatching": "Tests that verify fuzzy/smart name matching",
+    "disambiguation": "Tests that verify correct entity type recognition"
+  }
+}

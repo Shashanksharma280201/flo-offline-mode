@@ -1,0 +1,52 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": [
+        "airbnb",
+        "airbnb/hooks",
+        "airbnb-typescript",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:eslint-comments/recommended",
+        "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
+        "plugin:prettier/recommended"
+    ],
+    "overrides": [],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module",
+        "project": "./tsconfig.json"
+    },
+    "plugins": ["react", "@typescript-eslint", "prettier"],
+    "rules": {
+        "prettier/prettier": "error",
+        "react-hooks/exhaustive-deps": "warn",
+        "no-console": "off",
+        "no-prototype-builtins": "off",
+        "import/prefer-default-export": "off",
+        "import/no-default-export": "error",
+        "react/destructuring-assignment": "off",
+        "react/jsx-filename-extension": "off",
+        "no-use-before-define": [
+            "error",
+            { "functions": false, "classes": true, "variables": true }
+        ],
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-use-before-define": [
+            "error",
+            {
+                "functions": false,
+                "classes": true,
+                "variables": true,
+                "typedefs": true
+            }
+        ],
+        "unicorn/prevent-abbreviations": "off",
+        "unicorn/no-array-for-each": "off",
+        "import/no-extraneous-dependencies": "off"
+    }
+}

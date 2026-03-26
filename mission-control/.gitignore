@@ -1,0 +1,9 @@
+node_modules
+.env
+build
+frontend
+logs
+
+*.pem
+*.crt
+*.key

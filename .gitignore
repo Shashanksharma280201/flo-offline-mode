@@ -5,8 +5,7 @@ data/
 prod-backup/
 
 # Project directories (separate git repos)
-mission-control/
-mission-control-frontend/
+
 
 # Node modules
 node_modules/
@@ -31,4 +30,4 @@ npm-debug.log*
 # Test files (can be removed if not needed)
 test-connection.js
 test-minio.js
-RedisJSON/
+

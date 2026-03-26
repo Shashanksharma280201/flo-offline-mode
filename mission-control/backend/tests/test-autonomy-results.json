@@ -1,0 +1,790 @@
+{
+  "timestamp": "2026-02-23T11:17:16.382Z",
+  "mode": "http",
+  "summary": {
+    "total": 42,
+    "passed": 39,
+    "failed": 3,
+    "passRate": "92.9%"
+  },
+  "results": [
+    {
+      "id": "MC-1",
+      "category": "Mission Control",
+      "query": "Send MMR-31 to kitchen in office",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "executeRobotMission"
+      ],
+      "expectedFunctions": [
+        "executeRobotMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"robotId\":\"MMR-31\",\"pathMapName\":\"office\",\"missionName\":\"kitchen\"}"
+      },
+      "agentResponse": "I couldn't send MMR-31 to the kitchen because it's a manual type robot, and voice commands only work for autonomous robots. If you need further assistance, please let me know!",
+      "durationMs": 4978
+    },
+    {
+      "id": "MC-2",
+      "category": "Mission Control",
+      "query": "send robot 31 to delivery in warehouse",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "executeRobotMission"
+      ],
+      "expectedFunctions": [
+        "executeRobotMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"robotId\":\"31\",\"pathMapName\":\"warehouse\",\"missionName\":\"delivery\"}"
+      },
+      "agentResponse": "I couldn't send robot 31 to the delivery mission in the warehouse because it's a manual type and only supports voice commands for autonomous robots. Please check if there's an autonomous robot available for this task.",
+      "durationMs": 3491
+    },
+    {
+      "id": "MC-3",
+      "category": "Mission Control - Context",
+      "query": "abort mission",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "abortRobotMission"
+      ],
+      "expectedFunctions": [
+        "abortRobotMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"robotId\":\"MMR-31\"}"
+      },
+      "agentResponse": "Command processed",
+      "durationMs": 1806
+    },
+    {
+      "id": "MC-4",
+      "category": "Mission Control - Context",
+      "query": "pause it",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "pauseRobotMission"
+      ],
+      "expectedFunctions": [
+        "pauseRobotMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"robotId\":\"MMR-17\"}"
+      },
+      "agentResponse": "The mission on MMR-17 has been paused. If you need to resume it, just let me know!",
+      "durationMs": 3612
+    },
+    {
+      "id": "MC-5",
+      "category": "Mission Control - Context",
+      "query": "resume the mission on MMR-17",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "resumeRobotMission"
+      ],
+      "expectedFunctions": [
+        "resumeRobotMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"robotId\":\"MMR-17\"}"
+      },
+      "agentResponse": "Mission resumed! MMR-17 is continuing its mission. If you need to pause or stop it again, just let me know.",
+      "durationMs": 9346
+    },
+    {
+      "id": "MC-6",
+      "category": "Mission Control",
+      "query": "send MMR-31 back to charging station",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "returnRobotToStation"
+      ],
+      "expectedFunctions": [
+        "returnRobotToStation"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"robotId\":\"MMR-31\",\"stationName\":\"charging\"}"
+      },
+      "agentResponse": "Command processed",
+      "durationMs": 6941
+    },
+    {
+      "id": "PM-1",
+      "category": "PathMap Management",
+      "query": "Create a pathmap named warehouse in GPS mode",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "createPathMap"
+      ],
+      "expectedFunctions": [
+        "createPathMap"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"name\":\"warehouse\",\"frame\":\"utm\"}"
+      },
+      "agentResponse": "Perfect! I've created the 'warehouse' pathmap in GPS mode. The pathmap is ready. To add locations, say 'add station named [name]' or start recording a path by saying 'create mission'.",
+      "durationMs": 18314
+    },
+    {
+      "id": "PM-2",
+      "category": "PathMap Management",
+      "query": "create pathmap test-indoor in indoor mode",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "createPathMap"
+      ],
+      "expectedFunctions": [
+        "createPathMap"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"name\":\"test-indoor\",\"frame\":\"odom\"}"
+      },
+      "agentResponse": "The pathmap 'test-indoor' has been successfully created in indoor mode (ODOM frame). You can now add stations to this pathmap. To add a station, simply say 'add station' followed by the station name.",
+      "durationMs": 9053
+    },
+    {
+      "id": "PM-3",
+      "category": "PathMap Management",
+      "query": "delete pathmap old-office",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "deletePathMap"
+      ],
+      "expectedFunctions": [
+        "deletePathMap"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"old-office\"}"
+      },
+      "agentResponse": "I couldn't find a pathmap named \"old-office.\" Please check the name and try again. If you need to see a list of available pathmaps, just let me know!",
+      "durationMs": 26400
+    },
+    {
+      "id": "PM-4",
+      "category": "PathMap Management",
+      "query": "add station named loading dock to warehouse",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "addStationToPathMap"
+      ],
+      "expectedFunctions": [
+        "addStationToPathMap"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"warehouse\",\"stationName\":\"loading dock\"}"
+      },
+      "agentResponse": "The station \"loading dock\" is ready to be added to the \"warehouse\" pathmap. Please position the robot at the desired location for the \"loading dock\" station, then confirm to save the station.",
+      "durationMs": 17748
+    },
+    {
+      "id": "PM-5",
+      "category": "PathMap Management",
+      "query": "remove station kitchen from office",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "removeStationFromPathMap"
+      ],
+      "expectedFunctions": [
+        "removeStationFromPathMap"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"office\",\"stationName\":\"kitchen\"}"
+      },
+      "agentResponse": "It seems that the pathmap \"office\" was not found. Please check the pathmap name and try again. If you need to list available pathmaps, just let me know!",
+      "durationMs": 9018
+    },
+    {
+      "id": "PM-6",
+      "category": "PathMap Management",
+      "query": "rename station dock to loading bay in warehouse",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "renameStation"
+      ],
+      "expectedFunctions": [
+        "renameStation"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"warehouse\",\"oldName\":\"dock\",\"newName\":\"loading bay\"}"
+      },
+      "agentResponse": "It seems that the station named \"dock\" was not found in the \"warehouse\" pathmap. Please check the station name and try again. If you need to see a list of stations in the \"warehouse\" pathmap, let me know!",
+      "durationMs": 18534
+    },
+    {
+      "id": "MI-1",
+      "category": "Mission CRUD",
+      "query": "create mission delivery in office pathmap",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "createMission"
+      ],
+      "expectedFunctions": [
+        "createMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"office\",\"missionName\":\"delivery\"}"
+      },
+      "agentResponse": "It seems that the pathmap \"office\" doesn't exist. Would you like me to create it for you first?",
+      "durationMs": 24804
+    },
+    {
+      "id": "MI-2",
+      "category": "Mission CRUD",
+      "query": "delete mission old-patrol from warehouse",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "deleteMission"
+      ],
+      "expectedFunctions": [
+        "deleteMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"warehouse\",\"missionName\":\"old-patrol\"}"
+      },
+      "agentResponse": "It seems that the mission \"old-patrol\" was not found in the \"warehouse\" pathmap. Please check the mission name and try again. If you need further assistance, feel free to ask!",
+      "durationMs": 18520
+    },
+    {
+      "id": "MI-3",
+      "category": "Mission CRUD",
+      "query": "create a new mission called test-run in office",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "createMission"
+      ],
+      "expectedFunctions": [
+        "createMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"office\",\"missionName\":\"test-run\"}"
+      },
+      "agentResponse": "It seems that the pathmap \"office\" doesn't exist. Would you like me to create it for you first?",
+      "durationMs": 16908
+    },
+    {
+      "id": "LI-1",
+      "category": "List Operations",
+      "query": "list all pathmaps",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "listPathmaps"
+      ],
+      "expectedFunctions": [
+        "listPathmaps"
+      ],
+      "responseCheck": {
+        "passed": true,
+        "detail": "All response checks passed"
+      },
+      "agentResponse": "Here are the available pathmaps:\n\n1. **tug** (GPS) — 1 mission, 2 stations\n2. **test_racl** (GPS) — 0 missions, 0 stations\n3. **test_racl_1** (GPS) — 1 mission, 2 stations\n4. **test_racl_2** (GPS) — 2 missions, 5 stations\n5. **test150** (GPS) — 1 mission, 2 stations\n6. **racl** (GPS) — 2 missions, 2 stations\n7. **new111** (GPS) — 6 missions, 11 stations\n8. **test115** (GPS) — 0 missions, 0 stations\n9. **gate_lawn_1_full** (GPS) — 1 mission, 27 stations\n10. **civil_lawn_oakd_test** (GPS) — 1 mission, 2 stations\n11. **test_12** (GPS) — 1 mission, 2 stations\n12. **boundary_lawn_7** (GPS) — 0 missions, 1 station\n13. **boundary_lawn_2** (GPS) — 0 missions, 1 station\n14. **boundary_lawn_1** (GPS) — 0 missions, 1 station\n15. **Tvs_lawn_1_full** (GPS) — 1 mission, 9 stations\n16. **tvs_lawn_1_full_path_final** (GPS) — 1 mission, 10 stations\n17. **tvs_lawn_2_full_final** (GPS) — 1 mission, 5 stations\n18. **testingrtk** (GPS) — 0 missions, 0 stations\n19. **tvs_lawn_5_full_coverage_1** (GPS) — 1 mission, 69 stations\n20. **tvs_lawn_7_full_coverage** (GPS) — 3 missions, 19 stations\n21. **ss** (GPS) — 0 missions, 0 stations\n22. **officemap** (GPS) — 0 missions, 0 stations\n23. **office_map** (GPS) — 1 mission, 2 stations\n24. **officemap1** (GPS) — 1 mission, 2 stations\n25. **OfficeMap001** (GPS) — 1 mission, 2 stations\n26. **warehouse** (GPS) — 0 missions, 0 stations\n27. **test-indoor** (Indoor) — 0 missions, 0 stations\n\nIf you need more details or want to perform actions on any of these pathmaps, just let me know!",
+      "durationMs": 24248
+    },
+    {
+      "id": "LI-2",
+      "category": "List Operations",
+      "query": "show me GPS pathmaps only",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "listPathmaps"
+      ],
+      "expectedFunctions": [
+        "listPathmaps"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"filter\":\"utm\"}"
+      },
+      "agentResponse": "Here are the GPS pathmaps (UTM frame) available:\n\n1. **tug** — 1 mission, 2 stations\n2. **test_racl** — 0 missions, 0 stations\n3. **test_racl_1** — 1 mission, 2 stations\n4. **test_racl_2** — 2 missions, 5 stations\n5. **test150** — 1 mission, 2 stations\n6. **racl** — 2 missions, 2 stations\n7. **new111** — 6 missions, 11 stations\n8. **test115** — 0 missions, 0 stations\n9. **gate_lawn_1_full** — 1 mission, 27 stations\n10. **civil_lawn_oakd_test** — 1 mission, 2 stations\n11. **test_12** — 1 mission, 2 stations\n12. **boundary_lawn_7** — 0 missions, 1 station\n13. **boundary_lawn_2** — 0 missions, 1 station\n14. **boundary_lawn_1** — 0 missions, 1 station\n15. **Tvs_lawn_1_full** — 1 mission, 9 stations\n16. **tvs_lawn_1_full_path_final** — 1 mission, 10 stations\n17. **tvs_lawn_2_full_final** — 1 mission, 5 stations\n18. **testingrtk** — 0 missions, 0 stations\n19. **tvs_lawn_5_full_coverage_1** — 1 mission, 69 stations\n20. **tvs_lawn_7_full_coverage** — 3 missions, 19 stations\n21. **ss** — 0 missions, 0 stations\n22. **officemap** — 0 missions, 0 stations\n23. **office_map** — 1 mission, 2 stations\n24. **officemap1** — 1 mission, 2 stations\n25. **OfficeMap001** — 1 mission, 2 stations\n26. **warehouse** — 0 missions, 0 stations\n\nIf you need more details or want to perform actions on any of these pathmaps, let me know!",
+      "durationMs": 20491
+    },
+    {
+      "id": "LI-3",
+      "category": "List Operations",
+      "query": "list missions in office",
+      "mode": "http",
+      "passed": false,
+      "actualFunctions": [
+        "listMissions"
+      ],
+      "expectedFunctions": [
+        "listMissions"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"office\"}"
+      },
+      "responseCheck": {
+        "passed": false,
+        "detail": "expected action=\"list_missions\" in result"
+      },
+      "agentResponse": "It seems that the pathmap named \"office\" doesn't exist. Please check the name or create it if needed. If you need further assistance, feel free to ask!",
+      "durationMs": 22772
+    },
+    {
+      "id": "LI-4",
+      "category": "List Operations",
+      "query": "show all stations in warehouse",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "listStations"
+      ],
+      "expectedFunctions": [
+        "listStations"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"warehouse\"}"
+      },
+      "responseCheck": {
+        "passed": true,
+        "detail": "All response checks passed"
+      },
+      "agentResponse": "There are currently no stations in the \"warehouse\" pathmap. You can add a station by saying \"add station [name]\".",
+      "durationMs": 2690
+    },
+    {
+      "id": "SE-1",
+      "category": "Selection",
+      "query": "switch to office pathmap",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "selectPathMap"
+      ],
+      "expectedFunctions": [
+        "selectPathMap"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"office\"}"
+      },
+      "agentResponse": "Command processed",
+      "durationMs": 20720
+    },
+    {
+      "id": "SE-2",
+      "category": "Selection",
+      "query": "select mission delivery in office",
+      "mode": "http",
+      "passed": false,
+      "actualFunctions": [
+        "selectMission",
+        "listPathmaps"
+      ],
+      "expectedFunctions": [
+        "selectMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"office\",\"missionName\":\"delivery\"}"
+      },
+      "responseCheck": {
+        "passed": false,
+        "detail": "expected action=\"select_mission\" in result"
+      },
+      "agentResponse": "It seems there isn't a pathmap named \"office,\" but there are several similar options available:\n\n1. **officemap** (UTM) — 0 missions, 0 stations\n2. **office_map** (UTM) — 1 mission, 2 stations\n3. **officemap1** (UTM) — 1 mission, 2 stations\n4. **OfficeMap001** (UTM) — 1 mission, 2 stations\n\nPlease let me know which one you'd like to select for the \"delivery\" mission.",
+      "durationMs": 30787
+    },
+    {
+      "id": "RE-1",
+      "category": "Path Recording",
+      "query": "start recording path",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "startPathRecording"
+      ],
+      "expectedFunctions": [
+        "startPathRecording"
+      ],
+      "responseCheck": {
+        "passed": true,
+        "detail": "All response checks passed"
+      },
+      "agentResponse": "Path recording has started for the \"office\" pathmap. Drive the robot along the desired path, then say \"stop recording\" when you're finished.",
+      "durationMs": 15115
+    },
+    {
+      "id": "RE-2",
+      "category": "Path Recording",
+      "query": "stop recording",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "stopPathRecording"
+      ],
+      "expectedFunctions": [
+        "stopPathRecording"
+      ],
+      "responseCheck": {
+        "passed": true,
+        "detail": "All response checks passed"
+      },
+      "agentResponse": "Path recording has been stopped and saved for the \"office\" pathmap. If you need to start a new recording or make any changes, just let me know!",
+      "durationMs": 9989
+    },
+    {
+      "id": "PL-1",
+      "category": "Mission Planning",
+      "query": "start mission planning",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "startMissionPlanning"
+      ],
+      "expectedFunctions": [
+        "startMissionPlanning"
+      ],
+      "responseCheck": {
+        "passed": true,
+        "detail": "All response checks passed"
+      },
+      "agentResponse": "Mission planning for \"delivery\" has started. You can now click on path segments to add them to the mission. Let me know if you need any further assistance!",
+      "durationMs": 26376
+    },
+    {
+      "id": "PL-2",
+      "category": "Mission Planning",
+      "query": "stop mission planning",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "stopMissionPlanning"
+      ],
+      "expectedFunctions": [
+        "stopMissionPlanning"
+      ],
+      "responseCheck": {
+        "passed": true,
+        "detail": "All response checks passed"
+      },
+      "agentResponse": "Mission planning has been stopped. If you need to make further adjustments or start a new mission, just let me know!",
+      "durationMs": 10208
+    },
+    {
+      "id": "PL-3",
+      "category": "Mission Planning",
+      "query": "save the mission",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "saveMission"
+      ],
+      "expectedFunctions": [
+        "saveMission"
+      ],
+      "responseCheck": {
+        "passed": true,
+        "detail": "All response checks passed"
+      },
+      "agentResponse": "The mission \"delivery\" has been successfully saved in the \"office\" pathmap. If you need to make further adjustments or start executing the mission, just let me know!",
+      "durationMs": 20453
+    },
+    {
+      "id": "PL-4",
+      "category": "Mission Planning",
+      "query": "clear mission points",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "clearMissionPoints"
+      ],
+      "expectedFunctions": [
+        "clearMissionPoints"
+      ],
+      "responseCheck": {
+        "passed": true,
+        "detail": "All response checks passed"
+      },
+      "agentResponse": "The mission points have been cleared. You can now re-plan the mission. If you need to add new paths, just let me know!",
+      "durationMs": 26411
+    },
+    {
+      "id": "ST-1",
+      "category": "Status",
+      "query": "what is the mission status of MMR-31",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "getMissionStatus"
+      ],
+      "expectedFunctions": [
+        "getMissionStatus"
+      ],
+      "agentResponse": "The mission status for MMR-31 is currently unknown. Please check the live dashboard for real-time mission progress.",
+      "durationMs": 17846
+    },
+    {
+      "id": "ST-2",
+      "category": "Status",
+      "query": "is the robot localized",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "getLocalizationStatus"
+      ],
+      "expectedFunctions": [
+        "getLocalizationStatus"
+      ],
+      "agentResponse": "MMR-31 is localized. You can check the real-time localization status and GPS quality on the dashboard.",
+      "durationMs": 19213
+    },
+    {
+      "id": "CA-1",
+      "category": "Context Awareness",
+      "query": "stop it",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "abortRobotMission"
+      ],
+      "expectedFunctions": [
+        "abortRobotMission"
+      ],
+      "agentResponse": "Command processed",
+      "durationMs": 8737
+    },
+    {
+      "id": "CA-2",
+      "category": "Context Awareness",
+      "query": "execute the mission",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "executeRobotMission"
+      ],
+      "expectedFunctions": [
+        "executeRobotMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"robotId\":\"sim-bot\",\"pathMapName\":\"office\",\"missionName\":\"delivery\"}"
+      },
+      "agentResponse": "The mission couldn't be executed because \"sim-bot\" is a manual type robot, and voice commands only work for autonomous robots. If you need further assistance or have another task, feel free to let me know!",
+      "durationMs": 5380
+    },
+    {
+      "id": "CA-3",
+      "category": "Context Awareness",
+      "query": "add station named checkpoint here",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "addStationToPathMap",
+        "listPathmaps"
+      ],
+      "expectedFunctions": [
+        "addStationToPathMap"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"office\",\"stationName\":\"checkpoint\"}"
+      },
+      "agentResponse": "It seems the pathmap \"office\" was not found. However, I found several pathmaps with similar names:\n\n1. **officemap** (UTM) — 0 missions, 0 stations\n2. **office_map** (UTM) — 1 mission, 2 stations\n3. **officemap1** (UTM) — 1 mission, 2 stations\n4. **OfficeMap001** (UTM) — 1 mission, 2 stations\n\nPlease let me know which one you would like to use, or if you want to create a new pathmap.",
+      "durationMs": 46211
+    },
+    {
+      "id": "CA-4",
+      "category": "Context Awareness",
+      "query": "list missions in the active pathmap",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "listMissions"
+      ],
+      "expectedFunctions": [
+        "listMissions"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"pathMapName\":\"warehouse\"}"
+      },
+      "agentResponse": "There are no missions in the \"warehouse\" pathmap. You can create a new mission by saying \"create mission [name]\".",
+      "durationMs": 21547
+    },
+    {
+      "id": "DI-1",
+      "category": "Disambiguation",
+      "query": "execute mission test in office",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "executeRobotMission"
+      ],
+      "expectedFunctions": [
+        "executeRobotMission"
+      ],
+      "agentResponse": "It seems that robot MMR-31 is a manual type and cannot execute missions via voice commands. Please use the manual controls to proceed with the mission. If you need assistance with another robot, let me know!",
+      "durationMs": 16225
+    },
+    {
+      "id": "DI-2",
+      "category": "Disambiguation",
+      "query": "send MMR-31 to delivery in office",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "executeRobotMission"
+      ],
+      "expectedFunctions": [
+        "executeRobotMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"robotId\":\"MMR-31\",\"pathMapName\":\"office\",\"missionName\":\"delivery\"}"
+      },
+      "agentResponse": "It seems that MMR-31 is a manual type robot, and voice commands only work for autonomous robots. Please ensure that the robot is set to autonomous mode or use manual controls to proceed with the mission. If you need further assistance, feel free to ask!",
+      "durationMs": 19019
+    },
+    {
+      "id": "DI-3",
+      "category": "Disambiguation",
+      "query": "option 2 please",
+      "mode": "http",
+      "passed": false,
+      "actualFunctions": [],
+      "expectedFunctions": [
+        "selectDisambiguationChoice"
+      ],
+      "agentResponse": "It seems like you're referring to a previous disambiguation choice. However, I don't have the context of the options presented to you. Could you please provide more details or specify the context so I can assist you further?",
+      "durationMs": 10953
+    },
+    {
+      "id": "ER-1",
+      "category": "Error Cases",
+      "query": "send MMR-999 to kitchen in office",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "executeRobotMission"
+      ],
+      "expectedFunctions": [
+        "executeRobotMission"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"robotId\":\"MMR-999\",\"pathMapName\":\"office\",\"missionName\":\"kitchen\"}"
+      },
+      "agentResponse": "Command processed",
+      "durationMs": 5356
+    },
+    {
+      "id": "ER-2",
+      "category": "Error Cases",
+      "query": "list missions in nonexistent-pathmap",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "listMissions"
+      ],
+      "expectedFunctions": [
+        "listMissions"
+      ],
+      "responseCheck": {
+        "passed": true,
+        "detail": "All response checks passed"
+      },
+      "agentResponse": "I couldn't find a pathmap named \"nonexistent-pathmap.\" Please check the name and try again. If you need to create a new pathmap, let me know!",
+      "durationMs": 14761
+    },
+    {
+      "id": "VP-1",
+      "category": "Voice Phrasing",
+      "query": "go to the kitchen",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "executeRobotMission"
+      ],
+      "expectedFunctions": [
+        "executeRobotMission"
+      ],
+      "agentResponse": "It seems that MMR-31 is a manual type robot, and voice commands only work for autonomous robots. Please check if you have an autonomous robot available for this mission. If you need further assistance, feel free to ask!",
+      "durationMs": 22435
+    },
+    {
+      "id": "VP-2",
+      "category": "Voice Phrasing",
+      "query": "kill the mission now",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "abortRobotMission"
+      ],
+      "expectedFunctions": [
+        "abortRobotMission"
+      ],
+      "agentResponse": "Command processed",
+      "durationMs": 8073
+    },
+    {
+      "id": "VP-3",
+      "category": "Voice Phrasing",
+      "query": "make a new pathmap called outdoor-gps using GPS",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "createPathMap"
+      ],
+      "expectedFunctions": [
+        "createPathMap"
+      ],
+      "argsCheck": {
+        "passed": true,
+        "detail": "OK — {\"name\":\"outdoor-gps\",\"frame\":\"utm\"}"
+      },
+      "agentResponse": "I've created the 'outdoor-gps' pathmap in GPS mode. It's ready for you to add stations. To add a location, just say 'add station' followed by the station name.",
+      "durationMs": 9325
+    },
+    {
+      "id": "VP-4",
+      "category": "Voice Phrasing",
+      "query": "what pathmaps do I have",
+      "mode": "http",
+      "passed": true,
+      "actualFunctions": [
+        "listPathmaps"
+      ],
+      "expectedFunctions": [
+        "listPathmaps"
+      ],
+      "agentResponse": "You have 28 pathmaps available:\n\n1. **tug** (GPS) — 1 mission, 2 stations\n2. **test_racl** (GPS) — 0 missions, 0 stations\n3. **test_racl_1** (GPS) — 1 mission, 2 stations\n4. **test_racl_2** (GPS) — 2 missions, 5 stations\n5. **test150** (GPS) — 1 mission, 2 stations\n6. **racl** (GPS) — 2 missions, 2 stations\n7. **new111** (GPS) — 6 missions, 11 stations\n8. **test115** (GPS) — 0 missions, 0 stations\n9. **gate_lawn_1_full** (GPS) — 1 mission, 27 stations\n10. **civil_lawn_oakd_test** (GPS) — 1 mission, 2 stations\n11. **test_12** (GPS) — 1 mission, 2 stations\n12. **boundary_lawn_7** (GPS) — 0 missions, 1 station\n13. **boundary_lawn_2** (GPS) — 0 missions, 1 station\n14. **boundary_lawn_1** (GPS) — 0 missions, 1 station\n15. **Tvs_lawn_1_full** (GPS) — 1 mission, 9 stations\n16. **tvs_lawn_1_full_path_final** (GPS) — 1 mission, 10 stations\n17. **tvs_lawn_2_full_final** (GPS) — 1 mission, 5 stations\n18. **testingrtk** (GPS) — 0 missions, 0 stations\n19. **tvs_lawn_5_full_coverage_1** (GPS) — 1 mission, 69 stations\n20. **tvs_lawn_7_full_coverage** (GPS) — 3 missions, 19 stations\n21. **ss** (GPS) — 0 missions, 0 stations\n22. **officemap** (GPS) — 0 missions, 0 stations\n23. **office_map** (GPS) — 1 mission, 2 stations\n24. **officemap1** (GPS) — 1 mission, 2 stations\n25. **OfficeMap001** (GPS) — 1 mission, 2 stations\n26. **warehouse** (GPS) — 0 missions, 0 stations\n27. **test-indoor** (Indoor) — 0 missions, 0 stations\n28. **outdoor-gps** (GPS) — 0 missions, 0 stations\n\nIf you need more details or want to perform actions on any of these pathmaps, let me know!",
+      "durationMs": 31893
+    }
+  ]
+}

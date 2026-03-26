@@ -1,0 +1,162 @@
+{
+  "description": "Test ROS message data for mocking ROS bridge responses",
+  "robotMetaPose": {
+    "atOrigin": {
+      "latitude": 12.9716,
+      "longitude": 77.5946,
+      "pose": {
+        "point": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "yaw": 0.0
+      }
+    },
+    "atStation1": {
+      "latitude": 12.97165,
+      "longitude": 77.59465,
+      "pose": {
+        "point": {
+          "x": 8.656361,
+          "y": 3.815798
+        },
+        "yaw": 0.785398
+      }
+    },
+    "atStation2": {
+      "latitude": 12.9717,
+      "longitude": 77.5947,
+      "pose": {
+        "point": {
+          "x": 17.257387,
+          "y": 8.831052
+        },
+        "yaw": 1.570796
+      }
+    },
+    "movingNorth": {
+      "latitude": 12.97165,
+      "longitude": 77.5946,
+      "pose": {
+        "point": {
+          "x": 5.0,
+          "y": 10.0
+        },
+        "yaw": 1.570796
+      }
+    }
+  },
+  "serviceResponses": {
+    "startRecordingPath": {
+      "success": {
+        "success": true,
+        "message": "Path recording started"
+      },
+      "failure": {
+        "success": false,
+        "message": "Bot should be near a station"
+      }
+    },
+    "stopRecordingPath": {
+      "success": {
+        "success": true,
+        "message": "Path recording stopped",
+        "path": {
+          "points": [
+            { "x": 0.0, "y": 0.0 },
+            { "x": 0.5, "y": 0.0 },
+            { "x": 1.0, "y": 0.0 },
+            { "x": 1.5, "y": 0.5 },
+            { "x": 2.0, "y": 1.0 }
+          ]
+        }
+      },
+      "tooShort": {
+        "success": true,
+        "message": "Path too short",
+        "path": {
+          "points": [
+            { "x": 0.0, "y": 0.0 },
+            { "x": 0.1, "y": 0.0 }
+          ]
+        }
+      },
+      "failure": {
+        "success": false,
+        "message": "Failed to stop recording"
+      }
+    },
+    "loadMap": {
+      "success": {
+        "success": true,
+        "message": "LiDAR map loaded: test_map_1"
+      },
+      "failure": {
+        "success": false,
+        "message": "Map file not found"
+      }
+    },
+    "setInitialPoseFromGPS": {
+      "success": {
+        "success": true,
+        "message": "Localized from GPS"
+      },
+      "failure": {
+        "success": false,
+        "message": "GPS signal too weak"
+      }
+    },
+    "startMapping": {
+      "success": {
+        "success": true,
+        "message": "LIDAR mapping started"
+      },
+      "failure": {
+        "success": false,
+        "message": "LIDAR sensor not initialized"
+      }
+    },
+    "stopMapping": {
+      "success": {
+        "success": true,
+        "message": "PCD saved successfully"
+      },
+      "failure": {
+        "success": false,
+        "message": "Failed to save PCD"
+      }
+    },
+    "experimentalEnable": {
+      "enable": {
+        "success": true,
+        "message": "Non-RTK mode enabled"
+      },
+      "disable": {
+        "success": true,
+        "message": "Non-RTK mode disabled"
+      },
+      "failure": {
+        "success": false,
+        "message": "Failed to toggle experimental mode"
+      }
+    }
+  },
+  "ndtScores": {
+    "excellent": {
+      "score": 95.5,
+      "status": "excellent"
+    },
+    "good": {
+      "score": 85.2,
+      "status": "good"
+    },
+    "fair": {
+      "score": 70.8,
+      "status": "fair"
+    },
+    "poor": {
+      "score": 45.3,
+      "status": "poor"
+    }
+  }
+}

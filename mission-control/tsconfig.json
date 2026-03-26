@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "target": "ES2022",
+    "module": "ES2022",
+    "sourceMap": true,
+    "outDir": "./build",
+    "rootDir": "./backend",
+    "strict": true,
+    "noImplicitAny": true,
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "typeRoots": ["./backend/types", "./node_modules/@types"]
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  },
+  "lib": ["ES2022"],
+  "include": ["backend/**/*", "backend/models"],
+  "exclude": ["node_modules", "frontend"]
+}
