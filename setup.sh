@@ -194,6 +194,19 @@ install_conda
 export PATH="$CONDA_INSTALL_DIR/bin:$PATH"
 eval "$(conda shell.bash hook)" 2>/dev/null || true
 
+# Configure Conda to use only conda-forge (no ToS required)
+log_info "Configuring Conda channels..."
+
+# Create/overwrite .condarc to use only conda-forge
+cat > ~/.condarc << 'EOF'
+channels:
+  - conda-forge
+channel_priority: strict
+auto_activate_base: false
+EOF
+
+log_success "Conda configured to use conda-forge channel only"
+
 echo ""
 
 #############################################
@@ -220,18 +233,13 @@ create_conda_env() {
         fi
     fi
 
-    log_info "Creating conda environment with Python 3.11, Node.js 20, and build tools..."
+    log_info "Creating conda environment with Python 3.11 and Node.js 20..."
+    log_warning "Build tools (gcc, rust, cargo) will be installed via system packages..."
 
-    conda create -n $CONDA_ENV_NAME -y \
+    conda create -n $CONDA_ENV_NAME -y --override-channels -c conda-forge \
         python=3.11 \
         nodejs=20 \
-        npm \
-        gcc \
-        gxx \
-        make \
-        cmake \
-        rust \
-        cargo
+        npm
 
     log_success "Conda environment '$CONDA_ENV_NAME' created"
 
@@ -286,6 +294,16 @@ install_system_deps() {
         pkg-config \
         libssl-dev \
         clang
+
+    # Install Rust and Cargo via rustup
+    if ! command -v cargo &> /dev/null; then
+        log_info "Installing Rust and Cargo..."
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        source $HOME/.cargo/env
+        log_success "Rust and Cargo installed"
+    else
+        log_success "Rust and Cargo already installed"
+    fi
 
     log_success "System dependencies installed"
 }
