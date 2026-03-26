@@ -1,0 +1,22 @@
+# FastAPI and web server
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+sse-starlette==2.2.1
+
+# Rate limiting
+slowapi==0.1.9
+
+# Web scraping
+crawl4ai==0.4.247
+beautifulsoup4==4.12.3
+requests==2.32.3
+
+# AI/LLM
+google-generativeai==0.8.3
+
+# Database
+pymongo==4.10.1
+
+# Utilities
+python-dotenv==1.0.1
+pydantic==2.10.3
